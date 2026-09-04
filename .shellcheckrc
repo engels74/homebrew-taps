@@ -1,0 +1,5 @@
+# Homebrew's `brew style` runs shellcheck with --enable=all, which promotes
+# info-level checks to failures. SC2312 (command substitution masks return
+# values) fires on every `x="$(cmd)"` under `set -e`; it adds nothing here.
+disable=SC2312
+source-path=SCRIPTDIR

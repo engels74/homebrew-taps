@@ -1,0 +1,11 @@
+# macOS
+.DS_Store
+
+# Pipeline scratch (only ever written under $RUNNER_TEMP in CI, but keep local runs clean)
+*.dmg
+*.zip
+release.json
+releases-*.json
+runs.json
+commit.json
+existing-assets.txt
