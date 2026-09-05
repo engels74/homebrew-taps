@@ -61,7 +61,7 @@ Casks live in `Casks/<category>/`: `media/` holds FCast Sender, Flixor, Fred TV 
 
 - **qView** is disabled in the official homebrew-cask repository because of a Gatekeeper check. This cask removes the `com.apple.quarantine` attribute after install, so the app launches without a manual `xattr`.
 
-Flixor, Fred TV, Paicord and qView are distributed unsigned upstream; each of those casks runs a `postflight` step that strips the quarantine attribute from the installed app.
+Flixor, Fred TV, Paicord and qView are distributed unsigned upstream; each of those casks runs a `postflight_steps` block that strips the quarantine attribute from the installed app.
 
 ## Install, update, uninstall
 

@@ -13,14 +13,11 @@ cask "qview" do
 
   app "qView.app"
 
-  postflight do
-    app_path = File.join(appdir, "qView.app")
-
-    ohai "Removing quarantine attribute from #{app_path}"
-    system_command "/usr/bin/xattr",
-                   args:         ["-r", "-d", "com.apple.quarantine", app_path],
-                   sudo:         false,
-                   must_succeed: false
+  postflight_steps do
+    # Upstream ships unsigned builds; strip the quarantine attribute so Gatekeeper lets the app launch.
+    run "/usr/bin/xattr",
+        args:         ["-r", "-d", "com.apple.quarantine", "{{appdir}}/qView.app"],
+        must_succeed: false
   end
 
   zap trash: [

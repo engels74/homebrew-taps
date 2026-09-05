@@ -91,7 +91,7 @@ validates the workflows. `lint.yml` runs the same checks in CI.
 - **Flixor's app bundle is `FlixorMac.app` / `com.flixor.mac`** although the token
   is `flixor`; **Fred TV's bundle id is upstream's `dev.fredol.open-tv`**. Every `zap`
   path keys off those. Verify against an installed build before editing.
-- **fcast-sender has no `postflight` quarantine strip by design** (signed and
+- **fcast-sender has no `postflight_steps` quarantine strip by design** (signed and
   notarized) and `depends_on arch: :arm64` because upstream ships aarch64 only. The
   other four casks strip `com.apple.quarantine` with `must_succeed: false`; keep that.
 - **Step outputs enter shell only through `env:`.** Never interpolate `${{ }}` inside
