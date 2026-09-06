@@ -64,6 +64,8 @@ class BottleTests(unittest.TestCase):
         self.addCleanup(os.chdir, self.original)
         Path("Formula").mkdir()
         Path("Formula/example.rb").write_text('  version "1"\n')
+        Path("pipelines").mkdir()
+        Path("pipelines/bottles.json").write_text('["example"]\n')
         self.bottles = self.work / "bottles"
         self.bottles.mkdir()
         self.root_url = "https://example.org/release"
@@ -104,6 +106,17 @@ class BottleTests(unittest.TestCase):
     def test_wrong_recipe_version_rejects_release(self):
         Path("Formula/example.rb").write_text('  version "2"\n')
         with self.assertRaisesRegex(ValueError, "version differs"):
+            self.verifier.verify(self.bottles, self.root_url)
+
+    def test_unapproved_binary_rejects_release(self):
+        Path("Formula/other.rb").write_text('  version "1"\n')
+        Path("pipelines/bottles.json").write_text('["other"]\n')
+        with self.assertRaisesRegex(ValueError, "Unexpected formula"):
+            self.verifier.verify(self.bottles, self.root_url)
+
+    def test_unapproved_binary_without_metadata_rejects_release(self):
+        (self.bottles / "unapproved.bottle.tar.gz").write_bytes(b"binary")
+        with self.assertRaisesRegex(ValueError, "Unexpected release assets"):
             self.verifier.verify(self.bottles, self.root_url)
 
 

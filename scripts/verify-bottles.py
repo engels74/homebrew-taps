@@ -9,7 +9,10 @@ import sys
 
 
 def verify(directory, root_url):
-    expected = {p.stem for p in Path("Formula").glob("*.rb")}
+    formulae = {p.stem for p in Path("Formula").glob("*.rb")}
+    expected = set(json.loads(Path("pipelines/bottles.json").read_text()))
+    if not expected or not expected <= formulae:
+        raise ValueError("Invalid bottle publication allowlist")
     versions = {}
     for name in expected:
         recipe = Path(f"Formula/{name}.rb").read_text()
@@ -17,6 +20,7 @@ def verify(directory, root_url):
         revision = re.search(r'^  revision (\d+)$', recipe, re.M)
         versions[name] = version + (f"_{revision[1]}" if revision else "")
     seen = set()
+    allowed_assets = set()
     for metadata in sorted(directory.glob("*.bottle.json")):
         for full_name, entry in json.loads(metadata.read_text()).items():
             name = full_name.removeprefix("engels74/taps/")
@@ -44,14 +48,19 @@ def verify(directory, root_url):
                 if digest != bottle["sha256"]:
                     raise ValueError(f"Checksum mismatch: {source}")
                 source.rename(directory / bottle["filename"])
+                allowed_assets.add(bottle["filename"])
     required = {(name, arch) for name in expected for arch in ("arm64_linux", "x86_64_linux")}
     if seen != required:
         raise ValueError(f"Incomplete bottle set: missing {sorted(required - seen)}")
-    for name in expected:
+    for name in formulae:
         text = Path(f"Formula/{name}.rb").read_text()
         version = re.search(r'^  version "([^"]+)"$', text, re.M)[1]
         if not (directory / f"{name}-{version}-source.tar.gz").is_file():
             raise ValueError(f"Missing corresponding source for {name}")
+        allowed_assets.add(f"{name}-{version}-source.tar.gz")
+    unexpected = {p.name for p in directory.glob("*.tar.gz")} - allowed_assets
+    if unexpected:
+        raise ValueError(f"Unexpected release assets: {sorted(unexpected)}")
     with (directory / "SHA256SUMS").open("w") as checksums:
         for asset in sorted([*directory.glob("*.tar.gz"), *directory.glob("*.bottle.json")]):
             with asset.open("rb") as stream:

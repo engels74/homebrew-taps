@@ -45,6 +45,8 @@ class Fredtv < Formula
 
   def caveats
     <<~EOS
+      This formula builds from source. Binary redistribution is pending clarification of
+      the upstream GPL-2.0 terms with its OpenSSL 3 dependency; no tap bottle is published.
       Launch with fredtv, or add #{HOMEBREW_PREFIX}/share to your desktop session's XDG_DATA_DIRS.
       A running X11 or Wayland session and audio service are required.
       Uninstall preserves settings and recordings.

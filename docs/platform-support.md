@@ -18,7 +18,7 @@ compatibility. Linux formulae deliberately reject macOS; use the existing casks.
 | --- | --- | --- | --- |
 | FCast Sender 0.0.3 beta | Support existing ARM64 cask; retain Intel restriction | Support with native formula, GStreamer plugin and desktop session requirements | The [desktop sender](https://github.com/futo-org/fcast/tree/sender-0.0.3-beta/senders/desktop) is Rust/Slint, not the Electron receiver or terminal sender. [Upstream's Flatpak recipe](https://github.com/flathub/org.fcast.Sender/blob/master/org.fcast.Sender.yaml) documents Linux dependencies. Screen/audio capture needs real-session validation. |
 | Flixor beta2.4.0 | Retain universal cask, macOS 13+ | Retain restriction | [Flixor source](https://github.com/Flixorui/flixor) contains multiple variants. `FlixorMac.app` / `com.flixor.mac` uses SwiftUI, AppKit and native media frameworks. Shipping its web variant would change the packaged application. Porting the native variant requires substantial upstream work. |
-| Fred TV 1.9.1 | Support universal cask; install missing external media tools | Support native formula with Node 20, Rust/Tauri, GTK3/WebKitGTK 4.1 and media tools | [Pinned source/build configuration](https://github.com/Fredolx/open-tv/tree/v1.9.1) supports Linux. The formula builds the Angular frontend into the Tauri executable and wraps `mpv`, `ffmpeg`, `yt-dlp` paths. Node 20 matches Angular 17; an upstream frontend toolchain upgrade is needed before removing that build dependency. |
+| Fred TV 1.9.1 | Support universal cask; install missing external media tools | Support source-only formula with Node 20, Rust/Tauri, GTK3/WebKitGTK 4.1 and media tools | [Pinned source/build configuration](https://github.com/Fredolx/open-tv/tree/v1.9.1) supports Linux. Binary redistribution needs GPL-2.0/OpenSSL 3 clarification; the formula builds locally. It embeds the Angular frontend and wraps `mpv`, `ffmpeg`, `yt-dlp` paths. Node 20 matches Angular 17; an upstream frontend toolchain upgrade is needed before removing that build dependency. |
 | Paicord 2026-08-05-473c780 | Support universal cask, macOS 14+ | Retain restriction | [Source](https://github.com/llsc12/Paicord) and build workflow package a SwiftUI macOS app; Linux support is unfinished upstream. The resolver now binds a successful build run to its immutable release tag, exact asset and source commit. |
 | qView 7.1 | Support universal cask, macOS 12+ | Support native Qt 6 formula | [Release source](https://github.com/jurplel/qView/tree/7.1) uses qmake (current development uses a different build system). Reuse core Qt base, SVG, image-format and Wayland packages. Validate real image decoding, not just `--version`. |
 
@@ -113,8 +113,8 @@ should additionally start with real prior-version settings and verify persistenc
 
 ## Release and license controls
 
-Linux publication requires all four formulae on both architectures, successful
-formula/linkage/GUI checks, local bottle reinstall, matching versions/checksums,
+Linux publication requires successful builds of all four formulae on both architectures and
+formula/linkage/GUI checks, reinstall of eligible bottles, matching versions/checksums,
 and a corresponding source archive for each formula. The source archive contains
 the exact pinned source, Cargo-vendored dependencies, Fred TV's npm packages,
 license files and tap build recipes. Bottle JSON records build provenance and
@@ -123,12 +123,25 @@ inside these application archives. Binaries and sources are retained together.
 Same-version packaging/ABI fixes require a formula `revision` bump to trigger
 upgrades; a fresh bottle checksum alone is insufficient.
 
-qView (GPL-3.0), Fred TV (GPL-2.0), Paicord (GPL-3.0), and the MIT-licensed
+qView (GPL-3.0), Paicord (GPL-3.0), and the MIT-licensed
 PipeWire plugin permit redistribution subject to their notices and source
 obligations. FCast's top-level code is MIT, while the Linux desktop distribution
 uses [GPL-3.0](https://github.com/futo-org/fcast/blob/master/senders/extra/LICENSE-GPL)
 with Slint's GPL option; treating the combined binary as MIT-only is incorrect.
 See the README license table and the dependency licenses preserved in the sources.
+
+Fred TV remains source-only for Linux binary publication. Its pinned tree contains
+[GPL-2.0 terms](https://github.com/Fredolx/open-tv/blob/v1.9.1/LICENSE), and the
+compiled binary directly requires `libssl.so.3` and `libcrypto.so.3` via reqwest's
+native TLS backend. [OpenSSL 3 uses Apache-2.0](https://openssl-library.org/source/license/),
+which the [FSF identifies as incompatible with GPL-2.0-only](https://www.gnu.org/licenses/license-list.html#apache2).
+No upstream linking exception or explicit later-version grant was found. Whether
+a system-library exception applies to this Homebrew combination is unresolved;
+the tap does not assume it. Local source installation and tests remain available.
+Before enabling Fred TV bottles, obtain upstream clarification/permission or
+implement and validate a compatible dependency configuration. Existing upstream
+macOS cask support is retained: `otool -L` on both slices of that executable showed
+Apple system frameworks, including Security, and no OpenSSL dependency.
 
 [Flixor's custom license](https://github.com/Flixorui/flixor/blob/main/LICENSE.md)
 adds noncommercial and public-source conditions to AGPL terms. Retain upstream
@@ -141,15 +154,20 @@ bytes and completeness independently of whether a scan key is configured.
 
 ## Follow-up platform work
 
-1. Complete the manual media/audio/portal matrix on ordinary Linux desktops before
+1. Fred TV's Angular 17 toolchain requires follow-up before Homebrew disables
+   [node@20](https://formulae.brew.sh/formula/node@20) on 28 October 2026. Node 20 is
+   already deprecated. Upgrade and validate the frontend toolchain upstream (or
+   carry a narrowly reviewed compatibility patch) before that deadline; the tap
+   must not silently rely on an unsupported replacement Node major.
+2. Complete the manual media/audio/portal matrix on ordinary Linux desktops before
    claiming full feature parity. Keep Xvfb and Weston: each exercises a different
    backend, and neither requires a connected monitor.
-2. For Intel FCast, upstream's [macOS packaging task](https://github.com/futo-org/fcast/blob/sender-0.0.3-beta/xtask/src/sender.rs)
+3. For Intel FCast, upstream's [macOS packaging task](https://github.com/futo-org/fcast/blob/sender-0.0.3-beta/xtask/src/sender.rs)
    builds the host target, bundles GStreamer and names the result `macos-aarch64`.
    SDK x86_64 jobs are not proof of desktop Sender support. Build the actual
    `desktop-sender` on Intel with compatible GStreamer, inspect every dylib,
    then test launch, receiver playback and capture. Signing/notarization and an
    architecture-specific asset/resolver contract are prerequisites for expanding
    the cask. This is feasible work to investigate, not verified Intel support.
-3. Track upstream native Linux progress for Paicord and Flixor. Do not silently
+4. Track upstream native Linux progress for Paicord and Flixor. Do not silently
    substitute a web client under an existing native-app token.

@@ -133,6 +133,10 @@ validates the workflows. `lint.yml` runs the same checks in CI.
   `formula` for the PipeWire plugin. `bash scripts/discover.sh '' formula` discovers
   formulae. The build workflow's dependency order and GUI app list are explicit;
   update both when adding a formula.
+- `pipelines/bottles.json` is the binary publication allowlist. Fred TV is source-only
+  pending GPL-2.0/OpenSSL 3 linking permission clarification. Keep testing its source
+  build on both architectures, but do not upload its binaries without resolving that
+  licensing question. The verifier rejects unapproved binary assets.
 - Formula `url`, `version`, `sha256`, and generated `bottle` blocks are machine-owned
   after bootstrap. A scheduled/manual `formulae.yml` resolves candidates without
   changing main, builds and tests both architectures, uploads a complete release,

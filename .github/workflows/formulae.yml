@@ -38,9 +38,9 @@ jobs:
             done < <(jq -r '.formula[]' "$RUNNER_TEMP/formula-matrix.json")
           fi
           missing_bottles=false
-          for recipe in Formula/*.rb; do
-            grep -q '^  bottle do$' "$recipe" || missing_bottles=true
-          done
+          while IFS= read -r token; do
+            grep -q '^  bottle do$' "Formula/$token.rb" || missing_bottles=true
+          done < <(jq -r '.[]' pipelines/bottles.json)
           if [[ "$EVENT" == schedule && "$missing_bottles" == false ]] && git diff --quiet -- Formula; then
             echo 'build=false' >> "$GITHUB_OUTPUT"
           else
@@ -92,26 +92,32 @@ jobs:
           mkdir -p bottles
           # Bottle immediately: Homebrew records prefix changes during each build.
           for token in pipewire-gstreamer qview fredtv fcast-sender; do
-            brew install --formula --build-bottle "engels74/taps/$token"
+            if jq -e --arg token "$token" 'index($token) != null' pipelines/bottles.json > /dev/null; then
+              brew install --formula --build-bottle "engels74/taps/$token"
+            else
+              brew install --formula --build-from-source "engels74/taps/$token"
+            fi
             brew test "engels74/taps/$token"
             brew linkage --test "engels74/taps/$token"
             brew audit --strict --formula "engels74/taps/$token"
-            (cd bottles && brew bottle --json --no-rebuild --root-url="$BOTTLE_ROOT" "engels74/taps/$token")
+            if jq -e --arg token "$token" 'index($token) != null' pipelines/bottles.json > /dev/null; then
+              (cd bottles && brew bottle --json --no-rebuild --root-url="$BOTTLE_ROOT" "engels74/taps/$token")
+            fi
           done
       - name: X11 and Wayland app checks
         run: bash scripts/test-linux-gui.sh
       - name: Reinstall from local bottles and retest
         run: |
           set -euo pipefail
-          brew uninstall --formula fcast-sender fredtv qview pipewire-gstreamer
-          for artifact in bin/fcast-sender bin/fredtv bin/qview \
+          mapfile -t bottle_tokens < <(jq -r '.[]' pipelines/bottles.json)
+          brew uninstall --formula "${bottle_tokens[@]}"
+          for artifact in bin/fcast-sender bin/qview \
             share/applications/org.fcast.Sender.desktop \
-            share/applications/dev.fredol.open-tv.desktop \
             share/applications/com.interversehq.qView.desktop; do
             installed_path="$(brew --prefix)/$artifact"
             [[ ! -e "$installed_path" && ! -L "$installed_path" ]]
           done
-          for token in pipewire-gstreamer qview fredtv fcast-sender; do
+          for token in "${bottle_tokens[@]}"; do
             brew install --formula bottles/"$token"--*.bottle.tar.gz
             brew test "engels74/taps/$token"
           done
@@ -189,6 +195,8 @@ jobs:
           set -euo pipefail
           cat > "$RUNNER_TEMP/notes.md" <<EOF
           Linux ARM64 and x86_64 bottles built from $BASE_SHA.
+
+          Fred TV remains source-only pending GPL-2.0/OpenSSL linking permission clarification.
 
           Source archives include upstream sources, Rust/npm dependencies where used,
           licenses and the Homebrew build recipes. See SHA256SUMS and bottle JSON for provenance.
