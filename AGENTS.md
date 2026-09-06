@@ -54,6 +54,8 @@ automation and packaging regression/GUI tests. Components:
 4. Test locally: `GH_TOKEN=$(gh auth token) bash scripts/resolve.sh <token>` must
    print the expected version. `bash scripts/discover.sh` must list the token.
 5. Add the app to the README tables (Apps, Support, License).
+6. Add its verified bundle name, identifier and architectures to `APPS` in
+   `scripts/inspect-macos.py`. Inspection must pass against the actual DMG.
 
 No workflow edit is needed; `update-casks.yml` discovers `pipelines/*` at run time.
 

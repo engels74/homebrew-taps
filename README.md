@@ -134,7 +134,7 @@ flowchart LR
     H --> I[VirusTotal scan<br/>report in release notes]
 ```
 
-- [`update-casks.yml`](.github/workflows/update-casks.yml) runs on a six-hour schedule, lists every `pipelines/<app>/` directory, and runs the shared [`_update-cask.yml`](.github/workflows/_update-cask.yml) once per app, one at a time.
+- [`update-casks.yml`](.github/workflows/update-casks.yml) runs on a six-hour schedule, discovers cask-enabled `pipelines/<app>/` directories, and runs the shared [`_update-cask.yml`](.github/workflows/_update-cask.yml) once per app, one at a time.
 - `pipelines/<app>/resolve.sh` is the only app-specific code: it finds the newest upstream build and validates the tag and asset name strictly before anything else runs.
 - The DMG is downloaded, hashed, and attached to this repository's rolling `<app>-latest` release, and the cask's `version` and `sha256` lines are rewritten and committed. Release notes carry the upstream reference and checksum provenance; configured VirusTotal scans append report links. Before publishing, macOS checks verify the bundle identifier and all Mach-O architectures. Existing versioned assets are retained; published bytes must match the downloaded upstream bytes.
 - [`formulae.yml`](.github/workflows/formulae.yml) independently pins source releases to immutable commits, builds all four formulae on native Linux ARM64 and x86_64 runners, checks linkage, tests X11/Wayland launches, and reinstalls local bottles before publication. Failed builds leave published formulae unchanged. Source changes under an existing version require explicit review.
@@ -146,11 +146,12 @@ Releases: <https://github.com/engels74/homebrew-taps/releases>
 
 ## Adding a cask
 
-Three files, no workflow changes:
+Four components, no workflow changes:
 
 1. `Casks/<category>/<app>.rb` with `url` pointing at `releases/download/<app>-latest/<Prefix>-#{version}.dmg` and a donation `caveats` block.
 2. `pipelines/<app>/config.env` with the display name, upstream repo, asset prefix and donation links.
 3. `pipelines/<app>/resolve.sh` that writes `version` and `download_url` (see the existing resolvers and the contract at the top of `scripts/resolve.sh`).
+4. An entry in `scripts/inspect-macos.py` with the verified app bundle, bundle identifier and supported architectures.
 
 `bash scripts/discover.sh` should then list the new app, and `GH_TOKEN=$(gh auth token) bash scripts/resolve.sh <app>` should print its current version. Details in [AGENTS.md](AGENTS.md).
 

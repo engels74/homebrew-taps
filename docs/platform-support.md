@@ -79,6 +79,12 @@ Feature acceptance adds the following manual checks:
 - Fred TV's formula test generated a short synthetic video with ffmpeg, decoded
   it with mpv's null outputs, and invoked yt-dlp. This verifies the external tools
   without claiming playback through the app or a real audio device.
+- A separate manual test used the bottled Fred TV UI to import an M3U URL served
+  on localhost and play a generated video. Visible video frames rendered in mpv
+  under Xvfb with test-profile parameters `--vo=x11 --hwdec=no --ao=null`. Default
+  GPU output failed on this displayless host. This proves the import/player flow
+  with software video, not audible playback or acceleration. The profile and
+  local server were disposable; no account or third-party stream was used.
 - The host is bare metal without a connected display or usable GPU render node.
   Virtual-display tests use software rendering. They do not establish GPU,
   audible playback, receiver discovery or portal capture behavior.

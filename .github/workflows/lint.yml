@@ -50,10 +50,11 @@ jobs:
       - name: Verify published macOS bundles
         run: |
           set -euo pipefail
-          for token in fcast-sender flixor fredtv paicord qview; do
+          bash scripts/discover.sh > "$RUNNER_TEMP/casks.json"
+          while IFS= read -r token; do
             brew fetch --cask "engels74/taps/$token"
             python3 scripts/inspect-macos.py "$token" "$(brew --cache --cask "engels74/taps/$token")"
-          done
+          done < <(jq -r '.cask[]' "$RUNNER_TEMP/casks.json")
 
   scripts:
     name: shellcheck + pipeline discovery
