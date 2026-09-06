@@ -37,8 +37,9 @@ jobs:
 
       - name: Tap this checkout
         run: |
-          brew tap engels74/taps "$GITHUB_WORKSPACE"
+          [[ "$(cd "$(brew --repository engels74/taps)" && pwd -P)" == "$(cd "$GITHUB_WORKSPACE" && pwd -P)" ]]
           brew trust engels74/taps
+          brew --version
 
       - name: Read all casks
         run: brew readall --no-simulate engels74/taps
