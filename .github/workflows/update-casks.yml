@@ -18,7 +18,7 @@ on:
         type: string
 
 concurrency:
-  group: update-casks
+  group: tap-publication
   cancel-in-progress: false
 
 permissions:

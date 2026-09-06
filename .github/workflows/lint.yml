@@ -9,7 +9,7 @@ on:
       - "Formula/**"
       - "pipelines/**"
       - "scripts/**"
-      - ".github/workflows/lint.yml"
+      - ".github/workflows/**"
   push:
     branches: [main]
     paths:
@@ -17,7 +17,7 @@ on:
       - "Formula/**"
       - "pipelines/**"
       - "scripts/**"
-      - ".github/workflows/lint.yml"
+      - ".github/workflows/**"
   workflow_dispatch:
 
 permissions:
@@ -31,8 +31,15 @@ jobs:
       - name: Checkout tap
         uses: actions/checkout@v7
 
+      - uses: Homebrew/actions/setup-homebrew@1f8e202ffddf94def7f42f6fa3a482e821489f9c # 2026.07.10.1
+        with:
+          stable: "true"
+
       - name: Tap this checkout
-        run: brew tap engels74/taps "$GITHUB_WORKSPACE"
+        run: |
+          [[ "$(cd "$(brew --repository engels74/taps)" && pwd -P)" == "$(cd "$GITHUB_WORKSPACE" && pwd -P)" ]]
+          brew trust engels74/taps
+          brew --version
 
       - name: Read all casks
         run: brew readall --no-simulate engels74/taps
@@ -41,7 +48,18 @@ jobs:
         run: brew style engels74/taps
 
       - name: brew audit
-        run: brew audit --cask --tap engels74/taps
+        run: |
+          brew audit --cask --tap engels74/taps
+          brew audit --strict --formula --tap engels74/taps
+
+      - name: Verify published macOS bundles
+        run: |
+          set -euo pipefail
+          bash scripts/discover.sh > "$RUNNER_TEMP/casks.json"
+          while IFS= read -r token; do
+            brew fetch --cask "engels74/taps/$token"
+            python3 scripts/inspect-macos.py "$token" "$(brew --cache --cask "engels74/taps/$token")"
+          done < <(jq -r '.cask[]' "$RUNNER_TEMP/casks.json")
 
   scripts:
     name: shellcheck + pipeline discovery
@@ -55,5 +73,16 @@ jobs:
           shellcheck --version
           shellcheck -S warning -x scripts/*.sh scripts/lib/*.sh pipelines/*/resolve.sh
 
-      - name: Every pipeline resolves to exactly one cask
-        run: bash scripts/discover.sh
+      - name: Discover both package kinds
+        run: |
+          bash scripts/discover.sh
+          bash scripts/discover.sh '' formula
+
+      - name: Pipeline regression tests
+        run: python3 -m unittest discover -s scripts/tests -v
+
+      - uses: Homebrew/actions/setup-homebrew@1f8e202ffddf94def7f42f6fa3a482e821489f9c # 2026.07.10.1
+      - name: Validate workflows
+        run: |
+          brew install actionlint
+          actionlint
