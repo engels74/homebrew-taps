@@ -10,7 +10,9 @@ cask "fredtv" do
   homepage "https://github.com/Fredolx/open-tv"
 
   depends_on :macos
+  depends_on formula: "ffmpeg"
   depends_on formula: "mpv"
+  depends_on formula: "yt-dlp"
 
   app "Fred TV.app"
 
