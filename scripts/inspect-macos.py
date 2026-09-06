@@ -46,6 +46,9 @@ def inspect(token, dmg):
                     raise ValueError(f"{path.relative_to(app)} lacks {required - arches}")
             if str(main.relative_to(app)) not in binaries:
                 raise ValueError("Main executable is not Mach-O")
+            if token == "fcast-sender":
+                subprocess.run(["codesign", "--verify", "--deep", "--strict", str(app)], check=True)
+                subprocess.run(["spctl", "--assess", "--type", "execute", str(app)], check=True)
             print(json.dumps({"token": token, "bundle_id": identifier,
                               "minimum_os": info.get("LSMinimumSystemVersion"),
                               "binaries": binaries}, indent=2))

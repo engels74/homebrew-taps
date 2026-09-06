@@ -48,6 +48,9 @@ def bundle(token, destination):
             (source / ".cargo").mkdir(exist_ok=True)
             with (source / ".cargo/config.toml").open("a") as stream:
                 stream.write("\n" + config)
+            subprocess.run(["cargo", "metadata", "--locked", "--offline", "--format-version", "1",
+                            "--manifest-path", str(manifest)], cwd=source, env=env,
+                           check=True, stdout=subprocess.DEVNULL)
         if token == "fredtv":
             node = subprocess.check_output(["brew", "--prefix", "node@20"], text=True).strip()
             env["PATH"] = f"{node}/bin:{env['PATH']}"

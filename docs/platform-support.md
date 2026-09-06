@@ -66,11 +66,16 @@ Feature acceptance adds the following manual checks:
   SHA256. `scripts/inspect-macos.py` verified actual bundle identifiers and every
   included Mach-O architecture. FCast's main executable is ARM64 only; the other
   four bundles are universal. No cask version or checksum was manually changed.
-- On `cvps`, Ubuntu 26.04.1 x86_64, Homebrew 6.0.22: qView and Fred TV built from
+- On `cvps`, Ubuntu 26.04.1 x86_64, Homebrew 6.0.22: qView, Fred TV and FCast Sender built from
   source and passed Xvfb/X11 and headless Weston/Wayland launch tests in disposable
   homes. qView rendered PNG and SVG fixtures (checked pixels), and opened a GIF.
   Fred TV rendered its initial source-setup screen. PipeWire source/sink plugins
   loaded successfully in Homebrew GStreamer.
+- FCast Sender rendered its receiver-discovery interface under both display
+  backends. Tests loaded PipeWire/X11/PulseAudio capture elements, VP8, Opus and
+  WebRTC, and ran a synthetic VP8/RTP encoding pipeline. No real receiver was used.
+- Source archives were generated for all four formulae. The archived Fred TV and
+  FCast Cargo dependency graphs resolved offline using their vendored sources.
 - Fred TV's formula test generated a short synthetic video with ffmpeg, decoded
   it with mpv's null outputs, and invoked yt-dlp. This verifies the external tools
   without claiming playback through the app or a real audio device.

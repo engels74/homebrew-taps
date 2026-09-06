@@ -10,6 +10,4 @@ dbus-run-session -- xvfb-run -a -s '-screen 0 1280x720x24 -nolisten tcp' \
   python3 "${root}/scripts/gui-smoke.py" --session x11 "${apps[@]}"
 runtime="$(mktemp -d)"
 trap 'rm -rf "${runtime}"' EXIT
-XDG_RUNTIME_DIR="${runtime}" dbus-run-session -- \
-  weston --backend=headless --renderer=pixman --no-config --idle-time=0 \
-  --log="${runtime}/weston.log" -- python3 "${root}/scripts/gui-smoke.py" --session wayland "${apps[@]}"
+XDG_RUNTIME_DIR="${runtime}" dbus-run-session -- bash "${root}/scripts/test-wayland.sh" "${apps[@]}"
