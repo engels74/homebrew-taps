@@ -9,10 +9,6 @@
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 [![Monero: Donate XMR](https://img.shields.io/badge/Monero-Donate%20XMR-F26822?logo=monero&logoColor=white)](#-support-the-developers)
 
-```bash
-brew install --cask engels74/taps/<app>
-```
-
 </div>
 
 Every cask here re-hosts an upstream build on this repository's releases, checks it with VirusTotal, and is refreshed every six hours by a shared pipeline. Apps that Gatekeeper would block are de-quarantined on install, so they open like anything else.
@@ -39,13 +35,13 @@ This tap only re-packages other people's work. If an app earns a place in your D
 
 ## Apps
 
-| App | What it is | Install | Requires |
-| --- | --- | --- | --- |
-| [FCast Sender](https://fcast.org/) | Cast video and audio from your Mac to any FCast receiver | `brew install --cask engels74/taps/fcast-sender` | Apple Silicon, macOS 11+ |
-| [Flixor](https://github.com/Flixorui/flixor) | Plex client with a Netflix-like UI, built in SwiftUI | `brew install --cask engels74/taps/flixor` | macOS 13+ |
-| [Fred TV](https://github.com/Fredolx/open-tv) | Ultra-fast IPTV app, formerly Open TV | `brew install --cask engels74/taps/fredtv` | macOS, `mpv` (installed for you) |
-| [Paicord](https://github.com/llsc12/Paicord) | Native Discord client written in Swift | `brew install --cask engels74/taps/paicord` | macOS 14+ |
-| [qView](https://github.com/jurplel/qView) | Practical and minimal image viewer | `brew install --cask engels74/taps/qview` | macOS 12+ |
+| App | Install | Requires |
+| --- | --- | --- |
+| [FCast Sender](https://fcast.org/) | `brew install --cask engels74/taps/fcast-sender` | Apple Silicon, macOS 11+ |
+| [Flixor](https://github.com/Flixorui/flixor) | `brew install --cask engels74/taps/flixor` | macOS 13+ |
+| [Fred TV](https://github.com/Fredolx/open-tv) | `brew install --cask engels74/taps/fredtv` | macOS, `mpv` (installed for you) |
+| [Paicord](https://github.com/llsc12/Paicord) | `brew install --cask engels74/taps/paicord` | macOS 14+ |
+| [qView](https://github.com/jurplel/qView) | `brew install --cask engels74/taps/qview` | macOS 12+ |
 
 Casks live in `Casks/<category>/`: `media/` holds FCast Sender, Flixor, Fred TV and qView; `social/` holds Paicord. The category is only a folder; the install command never changes.
 
@@ -64,6 +60,8 @@ Casks live in `Casks/<category>/`: `media/` holds FCast Sender, Flixor, Fred TV 
 Flixor, Fred TV, Paicord and qView are distributed unsigned upstream; each of those casks runs a `postflight_steps` block that strips the quarantine attribute from the installed app.
 
 ## Install, update, uninstall
+
+Use the cask token from the [Apps](#apps) table (e.g. `fcast-sender`) for `<app>` below.
 
 ```bash
 # Install (taps the repository automatically)
