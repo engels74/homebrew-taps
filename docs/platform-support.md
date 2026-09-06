@@ -1,6 +1,6 @@
 # Platform support and validation
 
-Assessment date: 6 September 2026. The implementation target is
+Assessment date: 7 September 2026. The implementation target is
 [`engels74/taps`](https://github.com/engels74/homebrew-taps). The five former
 single-app taps are retired. The account inventory found no additional active
 Homebrew tap. Other repositories such as
@@ -22,6 +22,9 @@ compatibility. Linux formulae deliberately reject macOS; use the existing casks.
 | Paicord 2026-08-05-473c780 | Support universal cask, macOS 14+ | Retain restriction | [Source](https://github.com/llsc12/Paicord) and build workflow package a SwiftUI macOS app; Linux support is unfinished upstream. The resolver now binds a successful build run to its immutable release tag, exact asset and source commit. |
 | qView 7.1 | Support universal cask, macOS 12+ | Support native Qt 6 formula | [Release source](https://github.com/jurplel/qView/tree/7.1) uses qmake (current development uses a different build system). Reuse core Qt base, SVG, image-format and Wayland packages. Validate real image decoding, not just `--version`. |
 
+FCast's canonical repository is [FUTO GitLab](https://gitlab.futo.org/videostreaming/fcast).
+The formula pins an immutable commit archive from its GitHub mirror.
+
 ### Homebrew requirements and package choice
 
 Use the [official Linux installation requirements](https://docs.brew.sh/Homebrew-on-Linux)
@@ -41,7 +44,8 @@ No AppImage extraction, FUSE requirement or system-library guessing is needed.
 Core dependencies are reused. The only additional support recipe is
 `pipewire-gstreamer`: core [PipeWire's recipe](https://github.com/Homebrew/homebrew-core/blob/HEAD/Formula/p/pipewire.rb)
 disables its GStreamer plugin. This tap compiles only that plugin against installed
-PipeWire/GStreamer. It does not install or manage a second desktop audio server.
+PipeWire/GStreamer. It does not configure or start an audio server; the desktop
+continues to provide its own session services.
 
 ## What “working” means
 
@@ -88,9 +92,20 @@ Feature acceptance adds the following manual checks:
 - The host is bare metal without a connected display or usable GPU render node.
   Virtual-display tests use software rendering. They do not establish GPU,
   audible playback, receiver discovery or portal capture behavior.
-- Native ARM64/x86_64 GitHub Actions builds provide the release gates. Consult
-  [Linux formula workflow runs](https://github.com/engels74/homebrew-taps/actions/workflows/formulae.yml)
-  and their GUI/log artifacts for the exact commit and results.
+- Native Ubuntu 24.04 ARM64 and x86_64 runners built all four formulae, passed
+  formula/linkage/audit checks and X11/Wayland GUI tests, then uninstalled and
+  reinstalled the three eligible bottles and repeated the tests. Fred TV remained
+  installed from source. See the [validated native run](https://github.com/engels74/homebrew-taps/actions/runs/34064114038)
+  at commit `1dfbe55` and its GUI/log artifacts.
+- [macOS CI](https://github.com/engels74/homebrew-taps/actions/runs/34064281327)
+  passed Homebrew parsing, style and audits, all five downloaded bundle checks,
+  shell/workflow validation and all 19 regression tests at the same commit.
+- The downloaded CI artifacts passed completeness and checksum verification:
+  six approved bottles, six metadata files and four source archives. Archived
+  provenance and recipes match the pinned formulae. Homebrew merged both
+  architectures into each eligible formula and those generated definitions passed
+  style checks. No Fred TV binary was present. Release publication awaits merge
+  and a successful main-branch run.
 - No Intel Mac runtime, authenticated Flixor/Paicord session, live IPTV source or
   physical FCast receiver was available. Those feature checks remain manual.
 

@@ -109,7 +109,7 @@ export XDG_DATA_DIRS="/home/linuxbrew/.linuxbrew/share:${XDG_DATA_DIRS:-/usr/loc
 
 Your desktop must provide X11 or Wayland, a session D-Bus, and audio. FCast screen sharing also needs the desktop's PipeWire service and a compatible `xdg-desktop-portal` ScreenCast backend. Install those services through your distribution/desktop. The tap installs only a GStreamer PipeWire plugin alongside Homebrew's libraries; it does not start another audio server or portal. Fred TV's wrapper exposes its external media tools to launches from desktop menus.
 
-Formula uninstall removes the launcher, desktop entry, icons and binaries, and preserves settings, sources and recordings. Formulae have no cask `--zap` equivalent. `brew autoremove` can remove unused dependencies; review its output before confirming. Do not run GUI apps with `sudo`.
+Formula uninstall removes the launcher, desktop entry, icons and binaries, and preserves settings, sources and recordings. Formulae have no cask `--zap` equivalent. Use `brew autoremove --dry-run` to review unused dependencies before removing them with `brew autoremove`. Do not run GUI apps with `sudo`.
 
 ## Migrating from the old single-app taps
 
