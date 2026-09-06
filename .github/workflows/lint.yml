@@ -31,6 +31,10 @@ jobs:
       - name: Checkout tap
         uses: actions/checkout@v7
 
+      - uses: Homebrew/actions/setup-homebrew@1f8e202ffddf94def7f42f6fa3a482e821489f9c # 2026.07.10.1
+        with:
+          stable: "true"
+
       - name: Tap this checkout
         run: |
           brew tap engels74/taps "$GITHUB_WORKSPACE"
@@ -76,7 +80,7 @@ jobs:
       - name: Pipeline regression tests
         run: python3 -m unittest discover -s scripts/tests -v
 
-      - uses: Homebrew/actions/setup-homebrew@master
+      - uses: Homebrew/actions/setup-homebrew@1f8e202ffddf94def7f42f6fa3a482e821489f9c # 2026.07.10.1
       - name: Validate workflows
         run: |
           brew install actionlint

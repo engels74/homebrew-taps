@@ -65,6 +65,8 @@ Flixor, Fred TV, Paicord and qView are distributed unsigned upstream; each of th
 
 ## Install, update, uninstall
 
+Use current Homebrew (validated with 6.0.22); run `brew update` before installing.
+
 Use the cask token from the [Apps](#apps) table (e.g. `fcast-sender`) for `<app>` below.
 
 ```bash
