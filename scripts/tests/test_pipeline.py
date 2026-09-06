@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import shutil
 import tempfile
 import unittest
 
@@ -181,6 +182,22 @@ print(status, end="")
         formulae = subprocess.check_output(["bash", str(ROOT / "scripts/discover.sh"), "", "formula"], text=True)
         self.assertEqual(len(json.loads(casks)["cask"]), 5)
         self.assertEqual(set(json.loads(formulae)["formula"]), {"qview", "fredtv", "fcast-sender", "pipewire-gstreamer"})
+
+    def test_discovery_does_not_hide_missing_package_files(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            work = Path(scratch)
+            (work / "scripts/lib").mkdir(parents=True)
+            shutil.copy2(ROOT / "scripts/lib/common.sh", work / "scripts/lib/common.sh")
+            shutil.copy2(ROOT / "scripts/discover.sh", work / "scripts/discover.sh")
+            pipeline = work / "pipelines/broken"
+            pipeline.mkdir(parents=True)
+            for kind, message in (("cask", "Missing cask resolver"), ("formula", "Missing Formula")):
+                (pipeline / "config.env").write_text(
+                    f'PACKAGE_KINDS={kind}\nDISPLAY_NAME=Broken\nUPSTREAM_URL=https://example.org\nASSET_PREFIX=Broken\n')
+                result = subprocess.run(["bash", str(work / "scripts/discover.sh"), "", kind],
+                                        text=True, capture_output=True)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(message, result.stderr)
 
 
 if __name__ == "__main__":

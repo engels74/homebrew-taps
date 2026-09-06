@@ -114,6 +114,8 @@ the exact pinned source, Cargo-vendored dependencies, Fred TV's npm packages,
 license files and tap build recipes. Bottle JSON records build provenance and
 separately installed Homebrew dependencies; those dependencies are not repackaged
 inside these application archives. Binaries and sources are retained together.
+Same-version packaging/ABI fixes require a formula `revision` bump to trigger
+upgrades; a fresh bottle checksum alone is insufficient.
 
 qView (GPL-3.0), Fred TV (GPL-2.0), Paicord (GPL-3.0), and the MIT-licensed
 PipeWire plugin permit redistribution subject to their notices and source

@@ -15,8 +15,10 @@ casks=()
 for dir in "${REPO_ROOT}"/pipelines/*/
 do
   cask="$(basename "${dir}")"
-  if [[ "${kind}" = cask && ! -f "${dir}/resolve.sh" ]]; then continue; fi
-  if [[ "${kind}" = formula && ! -f "${REPO_ROOT}/Formula/${cask}.rb" ]]; then continue; fi
+  PACKAGE_KINDS=cask
+  # shellcheck disable=SC1091
+  source "${dir}/config.env"
+  [[ ",${PACKAGE_KINDS}," = *",${kind},"* ]] || continue
   load_pipeline "${cask}" "${kind}" >/dev/null
   if [[ -z "${filter}" ]] || [[ "${filter}" = "${cask}" ]]
   then

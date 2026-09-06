@@ -136,6 +136,9 @@ validates the workflows. `lint.yml` runs the same checks in CI.
   changing main, builds and tests both architectures, uploads a complete release,
   verifies downloaded checksums, then commits. Same-version source changes fail
   for manual review. Keep explicit source versions and immutable commit archive URLs.
+  Increment `revision` for same-version packaging or dependency/ABI fixes so
+  installed users receive them with `brew upgrade`; rebuilding bottles alone
+  does not make the application version outdated.
 - Build and bottle each formula sequentially, immediately after its tests. Homebrew
   records prefix changes between build and bottling; unrelated installs in between
   can contaminate a bottle. Never run simultaneous brew installs in one prefix.
