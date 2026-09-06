@@ -8,12 +8,16 @@
 source "$(dirname "$0")/lib/common.sh"
 
 filter="${1:-}"
+kind="${2:-cask}"
+[[ "${kind}" = cask || "${kind}" = formula ]] || die "Expected cask or formula"
 casks=()
 
 for dir in "${REPO_ROOT}"/pipelines/*/
 do
   cask="$(basename "${dir}")"
-  load_pipeline "${cask}" >/dev/null # validates config, resolver, and cask file
+  if [[ "${kind}" = cask && ! -f "${dir}/resolve.sh" ]]; then continue; fi
+  if [[ "${kind}" = formula && ! -f "${REPO_ROOT}/Formula/${cask}.rb" ]]; then continue; fi
+  load_pipeline "${cask}" "${kind}" >/dev/null
   if [[ -z "${filter}" ]] || [[ "${filter}" = "${cask}" ]]
   then
     casks+=("${cask}")
@@ -21,4 +25,4 @@ do
 done
 
 [[ "${#casks[@]}" -gt 0 ]] || die "No pipeline matches '${filter}'"
-printf '%s\n' "${casks[@]}" | jq -R . | jq -cs '{cask: .}'
+printf '%s\n' "${casks[@]}" | jq -R . | jq -cs --arg kind "${kind}" '{($kind): .}'
