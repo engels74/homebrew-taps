@@ -5,17 +5,21 @@ repository.
 
 ## What this is
 
-`engels74/taps`, one Homebrew tap that re-hosts macOS builds of several upstream
-apps as casks. There is no application source, build system, or test suite here.
-Three moving parts:
+`engels74/taps` re-hosts upstream macOS casks and builds native Linux formulae.
+Application source stays upstream; this repository contains recipes, release
+automation and packaging regression/GUI tests. Components:
 
 1. `Casks/<category>/<token>.rb`, the casks. Categories are folders only; Homebrew
    loads `Casks/**/*.rb` and the token is the filename.
 2. `pipelines/<token>/` plus `scripts/`, the update pipeline. One resolver per cask,
    everything else shared.
-3. `.github/workflows/`, the schedule (`update-casks.yml`), the reusable per-cask
+3. `Formula/`, Linux-only source recipes for qview, fredtv, fcast-sender and the
+   supporting pipewire-gstreamer plugin. `scripts/resolve-formula.sh` pins source
+   commits; `write-formula.py` updates source metadata without touching resources.
+4. `.github/workflows/`, the schedule (`update-casks.yml`), the reusable per-cask
    pipeline (`_update-cask.yml`), validation (`lint.yml`) and the cron keepalive
-   (`immortality.yml`).
+   (`immortality.yml`), plus native dual-architecture builds and releases
+   (`formulae.yml`).
 
 ## The contract that spans files
 
@@ -77,8 +81,10 @@ validates the workflows. `lint.yml` runs the same checks in CI.
   rolling release already holds the asset, and `publish-release.sh` leaves a
   same-named asset in place. Recovery: delete that asset from `<token>-latest`, then
   dispatch the workflow for that cask.
-- **`publish-release.sh` prunes the rolling release to its newest 2 assets** after a
-  verified upload. Do not rely on older versioned DMGs staying downloadable.
+- **No automatic release pruning.** Keep binaries and corresponding sources
+  together. Casks use rolling releases with versioned assets; Linux bottles use
+  immutable run-specific releases. `publish-release.sh` downloads the hosted DMG
+  and rejects mismatched bytes before its checksum can enter a cask.
 - **Resolver guards are load-bearing, not defensive noise**: the tag regexes, the
   exact asset-name matches (`qView-<v>.dmg` excludes `qView-<v>-legacy.dmg`;
   `Fred.TV_<v>_universal.dmg` excludes other architectures), the exact expected URL
@@ -118,3 +124,35 @@ validates the workflows. `lint.yml` runs the same checks in CI.
   `chore(<token>): update to <version>`.
 - `README.md` is the user-facing description of the cadence, re-hosting, donation
   links and migration path. Keep it in sync when any of those change.
+
+## Linux packaging and validation
+
+- `PACKAGE_KINDS` defaults to `cask`; set `cask,formula` for apps with both, or
+  `formula` for the PipeWire plugin. `bash scripts/discover.sh '' formula` discovers
+  formulae. The build workflow's dependency order and GUI app list are explicit;
+  update both when adding a formula.
+- Formula `url`, `version`, `sha256`, and generated `bottle` blocks are machine-owned
+  after bootstrap. A scheduled/manual `formulae.yml` resolves candidates without
+  changing main, builds and tests both architectures, uploads a complete release,
+  verifies downloaded checksums, then commits. Same-version source changes fail
+  for manual review. Keep explicit source versions and immutable commit archive URLs.
+- Build and bottle each formula sequentially, immediately after its tests. Homebrew
+  records prefix changes between build and bottling; unrelated installs in between
+  can contaminate a bottle. Never run simultaneous brew installs in one prefix.
+- `pipewire-gstreamer` builds only PipeWire's GStreamer plugin against core PipeWire.
+  Do not replace or start the user's distribution audio server or portal.
+- Fred TV uses Node 20 for Angular 17. Keep Cargo/npm lockfiles effective. FCast must
+  build `senders/desktop`, not a similarly named receiver, CLI or SDK.
+- `python3 -m unittest discover -s scripts/tests -v` checks resolver guards, source
+  rewriting and complete bottle releases. `actionlint` checks all workflows.
+- On Linux, `bash scripts/test-linux-gui.sh [qview fredtv fcast-sender]` uses private
+  homes, D-Bus sessions, Xvfb and headless Weston. Required host tools: xvfb, xauth,
+  weston and dbus-run-session. It renders test images and verifies windows/surface
+  buffers. It does not prove audio, media playback, capture permissions or portals.
+- `scripts/inspect-macos.py TOKEN DMG` mounts read-only, verifies bundle identity and
+  all Mach-O slices, then detaches. The cask updater performs this before publishing.
+  Architecture policy changes require inspecting actual bundles, not asset labels.
+- Keep `docs/platform-support.md` honest about tested hardware and feature coverage.
+  Never infer Intel Mac runtime support from universal slices or Linux ARM support
+  from an x86_64 build. Do not overwrite an existing local tap when linking a test
+  checkout; use a temporary tap name and remove only your symlink afterwards.

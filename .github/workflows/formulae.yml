@@ -36,7 +36,11 @@ jobs:
               python3 scripts/write-formula.py "$RUNNER_TEMP/resolved.json"
             done < <(bash scripts/discover.sh '' formula | jq -r '.formula[]')
           fi
-          if [[ "$EVENT" == schedule ]] && git diff --quiet -- Formula; then
+          missing_bottles=false
+          for recipe in Formula/*.rb; do
+            grep -q '^  bottle do$' "$recipe" || missing_bottles=true
+          done
+          if [[ "$EVENT" == schedule && "$missing_bottles" == false ]] && git diff --quiet -- Formula; then
             echo 'build=false' >> "$GITHUB_OUTPUT"
           else
             echo 'build=true' >> "$GITHUB_OUTPUT"

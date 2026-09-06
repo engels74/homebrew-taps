@@ -56,5 +56,9 @@ class Fredtv < Formula
     assert_path_exists libexec/"open_tv"
     assert_match "Exec=#{opt_bin}/fredtv", (share/"applications/dev.fredol.open-tv.desktop").read
     assert_match "mpv", shell_output("#{formula_opt_bin("mpv")}/mpv --version")
+    system formula_opt_bin("ffmpeg")/"ffmpeg", "-hide_banner", "-loglevel", "error",
+           "-f", "lavfi", "-i", "color=c=red:s=32x32:d=0.1", "-c:v", "ffv1", testpath/"sample.mkv"
+    system formula_opt_bin("mpv")/"mpv", "--no-config", "--vo=null", "--ao=null", "--frames=1", testpath/"sample.mkv"
+    system formula_opt_bin("yt-dlp")/"yt-dlp", "--version"
   end
 end

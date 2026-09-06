@@ -61,8 +61,11 @@ class FcastSender < Formula
     assert_match version.to_s, shell_output("#{bin}/fcast-sender --version")
     ENV["GST_PLUGIN_PATH"] = "#{formula_opt_lib("engels74/taps/pipewire-gstreamer")}/gstreamer-1.0"
     ENV["GST_REGISTRY"] = (testpath/"registry.bin").to_s
-    %w[pipewiresrc ximagesrc pulsesrc].each do |element|
+    %w[pipewiresrc ximagesrc pulsesrc vp8enc opusenc webrtcbin].each do |element|
       system formula_opt_bin("gstreamer")/"gst-inspect-1.0", element
     end
+    system formula_opt_bin("gstreamer")/"gst-launch-1.0", "-q",
+           "videotestsrc", "num-buffers=2", "!", "video/x-raw,width=32,height=32,framerate=1/1",
+           "!", "videoconvert", "!", "vp8enc", "!", "rtpvp8pay", "!", "fakesink"
   end
 end
