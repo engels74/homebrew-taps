@@ -189,6 +189,40 @@ jobs:
           mkdir -p "$RUNNER_TEMP/verify"
           gh release download "$RELEASE_TAG" --dir "$RUNNER_TEMP/verify"
           (cd "$RUNNER_TEMP/verify" && sha256sum -c SHA256SUMS)
+      - name: Check VirusTotal configuration
+        id: vt_config
+        env:
+          VT_API_KEY: ${{ secrets.VT_API_KEY }}
+        run: |
+          if [[ -n "${VT_API_KEY:-}" ]]; then
+            echo 'enabled=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'VT_API_KEY is unset; bottle scanning skipped.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Scan Linux bottles
+        if: steps.vt_config.outputs.enabled == 'true'
+        id: virustotal
+        uses: crazy-max/ghaction-virustotal@v5
+        with:
+          vt_api_key: ${{ secrets.VT_API_KEY }}
+          request_rate: 4
+          files: bottles/*.bottle.tar.gz
+      - name: Attach scan report links
+        if: steps.vt_config.outputs.enabled == 'true'
+        env:
+          ANALYSIS: ${{ steps.virustotal.outputs.analysis }}
+        run: |
+          set -euo pipefail
+          gh release view "$RELEASE_TAG" --json body --jq '.body' > "$RUNNER_TEMP/notes.md"
+          {
+            echo ''
+            echo 'VirusTotal reports (informational, not a safety certification):'
+            IFS=',' read -ra reports <<< "$ANALYSIS"
+            for report in "${reports[@]}"; do
+              echo "- [${report%%=*}](${report#*=})"
+            done
+          } >> "$RUNNER_TEMP/notes.md"
+          gh release edit "$RELEASE_TAG" --notes-file "$RUNNER_TEMP/notes.md"
       - name: Commit verified bottle definitions
         run: |
           set -euo pipefail

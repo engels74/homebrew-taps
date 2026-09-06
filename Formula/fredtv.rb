@@ -9,11 +9,16 @@ class Fredtv < Formula
   depends_on "node@20" => :build # Angular 17's supported upstream build toolchain.
   depends_on "pkgconf" => :build
   depends_on "rust" => :build
+  depends_on "cairo"
   depends_on "ffmpeg"
+  depends_on "gdk-pixbuf"
+  depends_on "glib"
   depends_on "gtk+3"
+  depends_on "libsoup"
   depends_on :linux
   depends_on "mpv"
   depends_on "openssl@3"
+  depends_on "pango"
   depends_on "webkitgtk"
   depends_on "yt-dlp"
 

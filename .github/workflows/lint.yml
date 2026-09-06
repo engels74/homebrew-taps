@@ -47,6 +47,14 @@ jobs:
           brew audit --cask --tap engels74/taps
           brew audit --strict --formula --tap engels74/taps
 
+      - name: Verify published macOS bundles
+        run: |
+          set -euo pipefail
+          for token in fcast-sender flixor fredtv paicord qview; do
+            brew fetch --cask "engels74/taps/$token"
+            python3 scripts/inspect-macos.py "$token" "$(brew --cache --cask "engels74/taps/$token")"
+          done
+
   scripts:
     name: shellcheck + pipeline discovery
     runs-on: ubuntu-latest

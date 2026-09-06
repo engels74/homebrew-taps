@@ -7,6 +7,7 @@ class PipewireGstreamer < Formula
   license "MIT"
 
   depends_on "pkgconf" => :build
+  depends_on "glib"
   depends_on "gstreamer"
   depends_on :linux
   depends_on "pipewire"
