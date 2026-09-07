@@ -1,59 +1,45 @@
-# Validation the old single-cask taps never had: every cask must parse, pass
-# `brew style` and `brew audit`, and every pipeline script must pass shellcheck.
 name: Lint
-
-on:
-  pull_request:
-    paths:
-      - "Casks/**"
-      - "Formula/**"
-      - "pipelines/**"
-      - "scripts/**"
-      - ".github/workflows/lint.yml"
-  push:
-    branches: [main]
-    paths:
-      - "Casks/**"
-      - "Formula/**"
-      - "pipelines/**"
-      - "scripts/**"
-      - ".github/workflows/lint.yml"
-  workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   casks:
     name: brew style + audit
-    runs-on: macos-latest
+    runs-on: macos-15
     steps:
-      - name: Checkout tap
-        uses: actions/checkout@v7
-
-      - name: Tap this checkout
-        run: brew tap engels74/taps "$GITHUB_WORKSPACE"
-
-      - name: Read all casks
-        run: brew readall --no-simulate engels74/taps
-
-      - name: brew style
-        run: brew style engels74/taps
-
-      - name: brew audit
-        run: brew audit --cask --tap engels74/taps
-
+    - uses: actions/checkout@v7.0.1
+      with:
+        persist-credentials: false
+    - name: Tap this checkout
+      run: |
+        set -euo pipefail
+        tap_parent="$(brew --repository)/Library/Taps/engels74"
+        mkdir -p "$tap_parent"
+        ln -s "$GITHUB_WORKSPACE" "$tap_parent/homebrew-taps"
+    - name: Read all casks
+      run: brew readall --no-simulate engels74/taps
+    - name: brew style
+      run: brew style engels74/taps
+    - name: brew audit
+      run: brew audit --cask --tap engels74/taps
+    - name: Reject tracked-file changes
+      run: git diff --exit-code HEAD
+    timeout-minutes: 25
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: '1'
+      HOMEBREW_NO_INSTALL_CLEANUP: '1'
   scripts:
-    name: shellcheck + pipeline discovery
-    runs-on: ubuntu-latest
+    name: shell checks and offline updater fixtures
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
-      - name: Checkout tap
-        uses: actions/checkout@v7
-
-      - name: shellcheck
-        run: |
-          shellcheck --version
-          shellcheck -S warning -x scripts/*.sh scripts/lib/*.sh pipelines/*/resolve.sh
-
-      - name: Every pipeline resolves to exactly one cask
-        run: bash scripts/discover.sh
+    - uses: actions/checkout@v7.0.1
+      with:
+        persist-credentials: false
+    - uses: actions/setup-python@v7.0.0
+      with:
+        python-version: '3.14'
+    - run: bash .github/scripts/check.sh
+    - run: git diff --exit-code HEAD
+'on':
+  workflow_call: null
+  workflow_dispatch: null

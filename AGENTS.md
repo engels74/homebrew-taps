@@ -31,8 +31,8 @@ Three moving parts:
   same line. `scripts/write-cask.sh` rewrites them with an anchored `sed` and, unlike
   the old per-repo workflows, **fails loudly** if the rewrite did not take effect.
 - The updater commits as `github-actions[bot]` with `chore(<token>): update to <version>`
-  and pushes to `main`. Pull before editing a cask. `renovate.json`
-  `gitIgnoredAuthors` hardcodes that committer email; change both together.
+  through a checked cask PR with an explicit full-CI dispatch. See `CI.md` for
+  required settings, local checks and generated update behavior.
 
 ## Adding a cask
 
@@ -68,7 +68,8 @@ rm "$T/homebrew-taps"
 
 `brew style` runs shellcheck with all checks enabled and fails on info-level
 findings; keep `.shellcheckrc` in mind before disabling checks inline. `actionlint`
-validates the workflows. `lint.yml` runs the same checks in CI.
+validates the workflows. `lint.yml` runs the same native checks behind the unfiltered required `ci` gate.
+`bash .github/scripts/check.sh` also runs four offline Python updater fixtures.
 
 ## Footguns
 
@@ -108,9 +109,9 @@ validates the workflows. `lint.yml` runs the same checks in CI.
   (Daniel Rudolf, v1.1.1) in an AGPL-3.0 repo. Re-vendor from upstream rather than
   patching in place; its header points at a "LICENSE file" that here holds the AGPL
   text.
-- Renovate automerges all GitHub Actions updates including majors with
-  `ignoreTests: true`; a major bump lands on `main` unreviewed, so check the next
-  scheduled run after one merges.
+- Renovate uses the shared preset and required CI gate; `ignoreTests` is never
+  enabled. Cask version/hash updates remain owned by the download/re-hosting
+  publisher. See `CI.md` for the activation state and limitations.
 
 ## Conventions
 
