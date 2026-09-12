@@ -4,10 +4,21 @@
 set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 : "${XDG_RUNTIME_DIR:?Private runtime directory required}"
+: "${1:?Application required}"
+app="$1"
 weston --backend=headless --renderer=pixman --no-config --idle-time=0 \
   --socket=tap-wayland --log="${XDG_RUNTIME_DIR}/weston.log" &
 compositor=$!
-trap 'kill "${compositor}" 2>/dev/null || true; wait "${compositor}" 2>/dev/null || true' EXIT
+cleanup() {
+  local status=$?
+  kill "${compositor}" 2>/dev/null || true
+  wait "${compositor}" 2>/dev/null || true
+  local artifacts="${GUI_TEST_ARTIFACTS:-/tmp/tap-gui-results}"
+  mkdir -p "${artifacts}"
+  cp "${XDG_RUNTIME_DIR}/weston.log" "${artifacts}/weston-${app}.log"
+  return "${status}"
+}
+trap cleanup EXIT
 for _ in {1..100}
 do
   [[ -S "${XDG_RUNTIME_DIR}/tap-wayland" ]] && break
@@ -24,3 +35,5 @@ done
 }
 export WAYLAND_DISPLAY=tap-wayland
 python3 "${root}/scripts/gui-smoke.py" --session wayland "$@"
+# A compositor crash must also fail when the client happened to finish first.
+kill -0 "${compositor}"

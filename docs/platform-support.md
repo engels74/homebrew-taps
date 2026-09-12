@@ -122,6 +122,10 @@ bash scripts/test-linux-gui.sh
 python3 scripts/inspect-macos.py qview /path/to/qView.dmg
 ```
 
+The Wayland harness starts a fresh headless Weston compositor and D-Bus session
+for each application, retaining its compositor log alongside the client logs.
+Early client exits remain failures and retain their complete output.
+
 The GUI harness uses private HOME/XDG directories and isolated D-Bus/display
 sessions. Evidence is written to `/tmp/tap-gui-results`. X11 checks window titles
 and image pixels; Wayland checks that a live client submits surface buffers.
