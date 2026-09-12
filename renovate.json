@@ -1,33 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    ":configMigration",
-    "group:allNonMajor"
+    "github>edbfi/automation:default#v1.0.0"
   ],
-  "automerge": true,
-  "automergeType": "branch",
-  "platformAutomerge": true,
-  "ignoreTests": true,
   "packageRules": [
     {
-      "description": "Automerge all GitHub Actions updates including major versions",
       "matchManagers": [
-        "github-actions"
+        "homebrew"
       ],
-      "matchUpdateTypes": [
-        "major",
-        "minor",
-        "patch",
-        "digest"
-      ],
-      "automerge": true
+      "enabled": false,
+      "description": "Cask versions and hashes are owned by the verified download/re-hosting pipeline."
     }
-  ],
-  "gitIgnoredAuthors": [
-    "41898282+github-actions[bot]@users.noreply.github.com",
-    "300104067+engels74-bot@users.noreply.github.com"
-  ],
-  "rebaseWhen": "conflicted",
-  "prConcurrentLimit": 10
+  ]
 }

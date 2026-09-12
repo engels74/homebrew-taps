@@ -4,7 +4,7 @@ cask "flixor" do
   version "beta2.4.0"
   sha256 "2b87d3bc7f7313e45a4d32270fc82d824f10995230d72885124f102e58998b9a"
 
-  url "https://github.com/engels74/homebrew-taps/releases/download/flixor-latest/Flixor-#{version}.dmg"
+  url "https://github.com/edbfi/homebrew-taps/releases/download/flixor-latest/Flixor-#{version}.dmg"
   name "Flixor"
   desc "Cross-platform Plex media client with a Netflix-like UI"
   homepage "https://github.com/Flixorui/flixor"

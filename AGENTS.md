@@ -5,8 +5,8 @@ repository.
 
 ## What this is
 
-`engels74/taps`, one Homebrew tap that re-hosts macOS builds of several upstream
-apps as casks. There is no application source, build system, or test suite here.
+`edbfi/taps`, one Homebrew tap that re-hosts macOS builds of several upstream
+apps as casks. There is no application source or build system here; offline updater fixtures validate the pipeline.
 Three moving parts:
 
 1. `Casks/<category>/<token>.rb`, the casks. Categories are folders only; Homebrew
@@ -31,8 +31,8 @@ Three moving parts:
   same line. `scripts/write-cask.sh` rewrites them with an anchored `sed` and, unlike
   the old per-repo workflows, **fails loudly** if the rewrite did not take effect.
 - The updater commits as `github-actions[bot]` with `chore(<token>): update to <version>`
-  and pushes to `main`. Pull before editing a cask. `renovate.json`
-  `gitIgnoredAuthors` hardcodes that committer email; change both together.
+  through a checked cask PR with an explicit full-CI dispatch. See `CI.md` for
+  required settings, local checks and generated update behavior.
 
 ## Adding a cask
 
@@ -59,16 +59,17 @@ No workflow edit is needed; `update-casks.yml` discovers `pipelines/*` at run ti
 tap, run the checks, and unlink:
 
 ```bash
-T="$(brew --repository)/Library/Taps/engels74"; mkdir -p "$T"; ln -sfn "$PWD" "$T/homebrew-taps"
-brew readall --no-simulate engels74/taps
-brew style engels74/taps          # rubocop on casks + shfmt/shellcheck on scripts
-brew audit --cask --tap engels74/taps
+T="$(brew --repository)/Library/Taps/edbfi"; mkdir -p "$T"; ln -sfn "$PWD" "$T/homebrew-taps"
+brew readall --no-simulate edbfi/taps
+brew style edbfi/taps          # rubocop on casks + shfmt/shellcheck on scripts
+brew audit --cask --tap edbfi/taps
 rm "$T/homebrew-taps"
 ```
 
 `brew style` runs shellcheck with all checks enabled and fails on info-level
 findings; keep `.shellcheckrc` in mind before disabling checks inline. `actionlint`
-validates the workflows. `lint.yml` runs the same checks in CI.
+validates the workflows. `lint.yml` runs the same native checks behind the unfiltered required `ci` gate.
+`bash .github/scripts/check.sh` also runs five offline Python updater fixtures.
 
 ## Footguns
 
@@ -77,8 +78,8 @@ validates the workflows. `lint.yml` runs the same checks in CI.
   rolling release already holds the asset, and `publish-release.sh` leaves a
   same-named asset in place. Recovery: delete that asset from `<token>-latest`, then
   dispatch the workflow for that cask.
-- **`publish-release.sh` prunes the rolling release to its newest 2 assets** after a
-  verified upload. Do not rely on older versioned DMGs staying downloadable.
+- **`publish-release.sh` preserves existing assets** so pending manually reviewed
+  cask PRs cannot remove the currently published download.
 - **Resolver guards are load-bearing, not defensive noise**: the tag regexes, the
   exact asset-name matches (`qView-<v>.dmg` excludes `qView-<v>-legacy.dmg`;
   `Fred.TV_<v>_universal.dmg` excludes other architectures), the exact expected URL
@@ -101,16 +102,16 @@ validates the workflows. `lint.yml` runs the same checks in CI.
   races and VirusTotal rate-limit failures.
 - The `virustotal-scan` job no-ops when `secrets.VT_API_KEY` is unset; missing scan
   results in release notes is expected, not a bug.
-- `immortality.yml` needs `secrets.PERSONAL_TOKEN`; `github.token` cannot re-enable a
+- `immortality.yml` needs `secrets.WORKFLOW_KEEPALIVE_TOKEN`; `github.token` cannot re-enable a
   workflow GitHub disabled for inactivity. If the 6-hour cron silently stops, check
   that secret first.
 - `scripts/vendor/gh-workflow-immortality.sh` is vendored third-party MIT code
   (Daniel Rudolf, v1.1.1) in an AGPL-3.0 repo. Re-vendor from upstream rather than
   patching in place; its header points at a "LICENSE file" that here holds the AGPL
   text.
-- Renovate automerges all GitHub Actions updates including majors with
-  `ignoreTests: true`; a major bump lands on `main` unreviewed, so check the next
-  scheduled run after one merges.
+- Renovate uses the shared preset and required CI gate; `ignoreTests` is never
+  enabled. Cask version/hash updates remain owned by the download/re-hosting
+  publisher. See `CI.md` for the activation state and limitations.
 
 ## Conventions
 

@@ -9,3 +9,7 @@ releases-*.json
 runs.json
 commit.json
 existing-assets.txt
+
+# Python fixture bytecode
+__pycache__/
+*.pyc

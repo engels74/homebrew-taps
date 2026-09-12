@@ -4,7 +4,7 @@ cask "fcast-sender" do
   version "0.0.3"
   sha256 "53ca328abc4f267e29077ffba96a1933867be91e2ee8164b9ed24eb9a3f09204"
 
-  url "https://github.com/engels74/homebrew-taps/releases/download/fcast-sender-latest/FCastSender-#{version}.dmg"
+  url "https://github.com/edbfi/homebrew-taps/releases/download/fcast-sender-latest/FCastSender-#{version}.dmg"
   name "FCast Sender"
   desc "Cast video and audio to FCast receivers"
   homepage "https://fcast.org/"
