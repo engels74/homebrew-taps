@@ -24,8 +24,9 @@ approve pull requests**; the repository token needs contents, pull-requests and
 actions write permissions in the publisher only. The scheduled updater and
 keepalive run only on the configured default branch. The dedicated edbfi WORKFLOW_KEEPALIVE_TOKEN-backed
 keepalive and optional VirusTotal configuration are preserved. Manual CI recovery
-inputs are printed if dispatch fails. No cask version, checksum, resolver rule,
-release asset or vendored keepalive source was changed in this implementation.
+inputs are printed if dispatch fails. Cask versions, checksums, resolver rules, existing release assets and vendored
+keepalive source are preserved. The updater checks out its exact triggering
+revision and requires a successful main-push CI run for that SHA before publishing.
 
 The versioned `edbfi/automation` preset replaces unconditional major automerge
 and `ignoreTests: true`. Full action version tags are bot-managed; automerge stays
