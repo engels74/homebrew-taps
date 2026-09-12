@@ -1,47 +1,50 @@
-# Scheduler: discover every pipelines/<cask>/ and run the shared pipeline
-# (_update-cask.yml) for each one, sequentially.
-#
-# max-parallel: 1 keeps pushes from racing and stays under VirusTotal's free
-# rate limit; fail-fast: false means one broken upstream never blocks the rest.
-# Run a single cask by hand: gh workflow run update-casks.yml -f cask=qview
 name: Update casks
-
-on:
+'on':
   schedule:
-    - cron: "0 */6 * * *"
+  - cron: 0 */6 * * *
   workflow_dispatch:
     inputs:
       cask:
-        description: "Only update this cask token (leave blank for all)"
+        description: Only update this cask token (leave blank for all)
         required: false
-        default: ""
+        default: ''
         type: string
-
 concurrency:
   group: update-casks
   cancel-in-progress: false
-
 permissions:
   contents: write
-
+  pull-requests: write
+  actions: write
 jobs:
   discover:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.discover.outputs.matrix }}
     steps:
-      - name: Checkout tap
-        uses: actions/checkout@v7
-
-      - name: Build matrix from pipelines/
-        id: discover
-        env:
-          CASK_FILTER: ${{ inputs.cask }}
-        run: |
-          matrix="$(bash scripts/discover.sh "$CASK_FILTER")"
-          echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
-          echo "Matrix: ${matrix}"
-
+    - uses: actions/checkout@v7.0.1
+      with:
+        ref: ${{ github.event.repository.default_branch }}
+        persist-credentials: false
+    - name: Require successful CI for this revision
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        EXPECTED_SHA: ${{ github.sha }}
+      run: |
+        set -euo pipefail
+        gh run list --workflow ci.yml --branch main --event push --commit "$EXPECTED_SHA" \
+          --json conclusion --jq 'any(.[]; .conclusion == "success")' | grep -qx true
+    - name: Build matrix from pipelines/
+      id: discover
+      env:
+        CASK_FILTER: ${{ inputs.cask }}
+      run: |
+        matrix="$(bash scripts/discover.sh "$CASK_FILTER")"
+        echo "matrix=${matrix}" >> "$GITHUB_OUTPUT"
+        echo "Matrix: ${matrix}"
+    if: github.repository == 'edbfi/homebrew-taps' && github.ref_name == github.event.repository.default_branch
+    timeout-minutes: 5
   update:
     needs: discover
     strategy:

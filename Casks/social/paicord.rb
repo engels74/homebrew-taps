@@ -4,7 +4,7 @@ cask "paicord" do
   version "2026-04-14-b0f0d9e"
   sha256 "009956d1e922232dc5e858aba9219d90f3fba23ea99255253db1771dcefe61d7"
 
-  url "https://github.com/engels74/homebrew-taps/releases/download/paicord-latest/Paicord-#{version}.dmg"
+  url "https://github.com/edbfi/homebrew-taps/releases/download/paicord-latest/Paicord-#{version}.dmg"
   name "Paicord"
   desc "Native Discord client, written in Swift"
   homepage "https://github.com/llsc12/Paicord"

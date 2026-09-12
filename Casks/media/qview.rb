@@ -4,7 +4,7 @@ cask "qview" do
   version "7.1"
   sha256 "fa34d0e54601b8557f4e879527b9bb1e728ace5c7c1c69cf126700ca4d0b5817"
 
-  url "https://github.com/engels74/homebrew-taps/releases/download/qview-latest/qView-#{version}.dmg"
+  url "https://github.com/edbfi/homebrew-taps/releases/download/qview-latest/qView-#{version}.dmg"
   name "qView"
   desc "Practical and minimal image viewer"
   homepage "https://github.com/jurplel/qView/"

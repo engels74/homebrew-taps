@@ -4,13 +4,13 @@ cask "fredtv" do
   version "1.9.1"
   sha256 "7266c11cfafa9bc6b42835db6ab3ec3fd0a7516557f1f43eb867852563523465"
 
-  url "https://github.com/engels74/homebrew-taps/releases/download/fredtv-latest/FredTV-#{version}.dmg"
+  url "https://github.com/edbfi/homebrew-taps/releases/download/fredtv-latest/FredTV-#{version}.dmg"
   name "Fred TV"
   desc "Ultra-fast, simple and powerful cross-platform IPTV app"
   homepage "https://github.com/Fredolx/open-tv"
 
-  depends_on :macos
   depends_on formula: "mpv"
+  depends_on :macos
 
   app "Fred TV.app"
 

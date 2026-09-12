@@ -73,6 +73,6 @@ ${support}
 ### Installation
 
 \`\`\`bash
-brew install --cask engels74/taps/${CASK_TOKEN}
+brew install --cask edbfi/taps/${CASK_TOKEN}
 \`\`\`
 NOTES

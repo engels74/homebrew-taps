@@ -1,11 +1,11 @@
 <div align="center">
 
-# engels74/taps
+# edbfi/taps
 
 **One Homebrew tap for macOS apps that homebrew-cask does not carry, kept current automatically.**
 
-[![Update casks](https://img.shields.io/github/actions/workflow/status/engels74/homebrew-taps/update-casks.yml?branch=main&label=update%20casks&logo=githubactions&logoColor=white)](https://github.com/engels74/homebrew-taps/actions/workflows/update-casks.yml)
-[![Lint](https://img.shields.io/github/actions/workflow/status/engels74/homebrew-taps/lint.yml?branch=main&label=lint&logo=githubactions&logoColor=white)](https://github.com/engels74/homebrew-taps/actions/workflows/lint.yml)
+[![Update casks](https://img.shields.io/github/actions/workflow/status/edbfi/homebrew-taps/update-casks.yml?branch=main&label=update%20casks&logo=githubactions&logoColor=white)](https://github.com/edbfi/homebrew-taps/actions/workflows/update-casks.yml)
+[![Lint](https://img.shields.io/github/actions/workflow/status/edbfi/homebrew-taps/lint.yml?branch=main&label=lint&logo=githubactions&logoColor=white)](https://github.com/edbfi/homebrew-taps/actions/workflows/lint.yml)
 [![License: AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-blue)](LICENSE)
 [![Monero: Donate XMR](https://img.shields.io/badge/Monero-Donate%20XMR-F26822?logo=monero&logoColor=white)](#-support-the-developers)
 
@@ -25,7 +25,7 @@ This tap only re-packages other people's work. If an app earns a place in your D
 | **FCast Sender** | No donation page. [Star the project](https://github.com/futo-org/fcast), file bugs, contribute. |
 | **qView** | No donation page. [Star the project](https://github.com/jurplel/qView), file bugs, contribute. |
 
-**Support this tap.** The pipeline, hosting, and upkeep are done by [@engels74](https://github.com/engels74). Monero is welcome:
+**Support this tap.** The pipeline, hosting, and upkeep are done by [@edbfi](https://github.com/edbfi). Monero is welcome:
 
 [![Monero: Donate XMR](https://img.shields.io/badge/Monero-Donate%20XMR-F26822?logo=monero&logoColor=white)](#-support-the-developers)
 
@@ -37,11 +37,11 @@ This tap only re-packages other people's work. If an app earns a place in your D
 
 | App | Install | Requires |
 | --- | --- | --- |
-| [FCast Sender](https://fcast.org/) | `brew install --cask engels74/taps/fcast-sender` | Apple Silicon, macOS 11+ |
-| [Flixor](https://github.com/Flixorui/flixor) | `brew install --cask engels74/taps/flixor` | macOS 13+ |
-| [Fred TV](https://github.com/Fredolx/open-tv) | `brew install --cask engels74/taps/fredtv` | macOS, `mpv` (installed for you) |
-| [Paicord](https://github.com/llsc12/Paicord) | `brew install --cask engels74/taps/paicord` | macOS 14+ |
-| [qView](https://github.com/jurplel/qView) | `brew install --cask engels74/taps/qview` | macOS 12+ |
+| [FCast Sender](https://fcast.org/) | `brew install --cask edbfi/taps/fcast-sender` | Apple Silicon, macOS 11+ |
+| [Flixor](https://github.com/Flixorui/flixor) | `brew install --cask edbfi/taps/flixor` | macOS 13+ |
+| [Fred TV](https://github.com/Fredolx/open-tv) | `brew install --cask edbfi/taps/fredtv` | macOS, `mpv` (installed for you) |
+| [Paicord](https://github.com/llsc12/Paicord) | `brew install --cask edbfi/taps/paicord` | macOS 14+ |
+| [qView](https://github.com/jurplel/qView) | `brew install --cask edbfi/taps/qview` | macOS 12+ |
 
 Casks live in `Casks/<category>/`: `media/` holds FCast Sender, Flixor, Fred TV and qView; `social/` holds Paicord. The category is only a folder; the install command never changes.
 
@@ -65,10 +65,10 @@ Use the cask token from the [Apps](#apps) table (e.g. `fcast-sender`) for `<app>
 
 ```bash
 # Install (taps the repository automatically)
-brew install --cask engels74/taps/<app>
+brew install --cask edbfi/taps/<app>
 
 # Or tap first, then install by short name
-brew tap engels74/taps
+brew tap edbfi/taps
 brew install --cask <app>
 
 # Update
@@ -81,17 +81,7 @@ brew uninstall --cask <app>
 brew uninstall --cask --zap <app>
 
 # Remove the tap
-brew untap engels74/taps
-```
-
-## Migrating from the old single-app taps
-
-`engels74/fcast-sender`, `engels74/flixor`, `engels74/fredtv`, `engels74/paicord` and `engels74/qview` are retired and no longer receive updates. Homebrew will not install a cask from this tap while the same-named cask from an old tap is installed, so migrate with:
-
-```bash
-brew uninstall --cask <app>            # keeps your settings and data; do not --zap
-brew untap engels74/<app>
-brew install --cask engels74/taps/<app>
+brew untap edbfi/taps
 ```
 
 ## How it works
@@ -105,16 +95,16 @@ flowchart LR
     D -- yes --> E[download + SHA256]
     E --> F[re-host on<br/>app-latest release]
     F --> G[rewrite cask<br/>version + sha256]
-    G --> H[commit to main]
+    G --> H[open PR for full CI and manual review]
     H --> I[VirusTotal scan<br/>report in release notes]
 ```
 
 - [`update-casks.yml`](.github/workflows/update-casks.yml) runs on a six-hour schedule, lists every `pipelines/<app>/` directory, and runs the shared [`_update-cask.yml`](.github/workflows/_update-cask.yml) once per app, one at a time.
 - `pipelines/<app>/resolve.sh` is the only app-specific code: it finds the newest upstream build and validates the tag and asset name strictly before anything else runs.
-- The DMG is downloaded, hashed, and attached to this repository's rolling `<app>-latest` release, and the cask's `version` and `sha256` lines are rewritten and committed. Every release page carries the upstream reference, the checksum source, and a VirusTotal report.
+- The DMG is downloaded, hashed, and attached to this repository's rolling `<app>-latest` release, and the cask's `version` and `sha256` lines are rewritten in a PR for full CI and manual review. Every release page carries the upstream reference, the checksum source, and a VirusTotal report.
 - [`lint.yml`](.github/workflows/lint.yml) runs `brew style`, `brew audit`, and shellcheck on every change.
 
-Releases: <https://github.com/engels74/homebrew-taps/releases>
+Releases: <https://github.com/edbfi/homebrew-taps/releases>
 
 ## Adding a cask
 
