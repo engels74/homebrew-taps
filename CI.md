@@ -27,7 +27,7 @@ keepalive and optional VirusTotal configuration are preserved. Manual CI recover
 inputs are printed if dispatch fails. No cask version, checksum, resolver rule,
 release asset or vendored keepalive source was changed in this implementation.
 
-The versioned `engels74/automation` preset replaces unconditional major automerge
+The versioned `edbfi/automation` preset replaces unconditional major automerge
 and `ignoreTests: true`. Full action version tags are bot-managed; automerge stays
 off pending the shared pre-1.0 policy correction and activation. Renovate's
 Homebrew manager is disabled because the cask updater owns verified re-hosted
