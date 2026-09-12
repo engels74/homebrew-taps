@@ -125,12 +125,12 @@ def run_app(token, session, image=None):
                 log.flush()
                 log.seek(0)
                 output = log.read()
-                if process.poll() is not None:
-                    raise RuntimeError(f"{token} exited ({process.returncode}):\n{output[-6000:]}")
                 artifacts = Path(os.environ.get("GUI_TEST_ARTIFACTS", "/tmp/tap-gui-results"))
                 artifacts.mkdir(parents=True, exist_ok=True)
                 label = f"{token}-{session}-{image or 'window'}"
                 (artifacts / f"{label}.log").write_text(output)
+                if process.poll() is not None:
+                    raise RuntimeError(f"{token} exited ({process.returncode}):\n{output[-6000:]}")
                 if session == "x11":
                     titles, red_pixels = x11_titles(artifacts / f"{label}.png")
                     expected = f"fixture.{image}" if image else {"fredtv": "Fred TV", "fcast-sender": "FCast"}[token]
