@@ -6,13 +6,9 @@
 
 # Platform support and validation
 
-Assessment date: 7 September 2026. The implementation target is
-[`edbfi/taps`](https://github.com/edbfi/homebrew-taps). The five former
-single-app taps are retired. The account inventory found no additional active
-Homebrew tap. Other repositories such as
-[Claude Atoll](https://github.com/engels74/claude-atoll) and
-[EasyHDR](https://github.com/engels74/EasyHDR) are not additional entries in this
-tap; adding a different application is outside this change.
+Original assessment: September 2026. This tap packages the five applications
+listed below; adding different applications or substituting their native variants
+is outside this change. Historical validation establishes only the stated scope.
 
 ## Compatibility decisions
 
@@ -76,7 +72,7 @@ Feature acceptance adds the following manual checks:
   SHA256. `scripts/inspect-macos.py` verified actual bundle identifiers and every
   included Mach-O architecture. FCast's main executable is ARM64 only; the other
   four bundles are universal. No cask version or checksum was manually changed.
-- On `cvps`, Ubuntu 26.04.1 x86_64, Homebrew 6.0.22: qView, Fred TV and FCast Sender built from
+- On a separate Linux x86_64 validation host: qView, Fred TV and FCast Sender built from
   source and passed Xvfb/X11 and headless Weston/Wayland launch tests in disposable
   homes. qView rendered PNG and SVG fixtures (checked pixels), and opened a GIF.
   Fred TV rendered its initial source-setup screen. PipeWire source/sink plugins
@@ -110,8 +106,8 @@ Feature acceptance adds the following manual checks:
   six approved bottles, six metadata files and four source archives. Archived
   provenance and recipes match the pinned formulae. Homebrew merged both
   architectures into each eligible formula and those generated definitions passed
-  style checks. No Fred TV binary was present. Release publication awaits merge
-  and a successful main-branch run.
+  style checks. No Fred TV binary was present. These were validation artifacts only;
+  merging this integration does not enable Linux publication.
 - No Intel Mac runtime, authenticated Flixor/Paicord session, live IPTV source or
   physical FCast receiver was available. Those feature checks remain manual.
 
@@ -134,8 +130,8 @@ should additionally start with real prior-version settings and verify persistenc
 
 ## Release and license controls
 
-Linux publication requires successful builds of all four formulae on both architectures and
-formula/linkage/GUI checks, reinstall of eligible bottles, matching versions/checksums,
+Any future Linux publication design must require successful builds of all four
+formulae on both architectures and formula/linkage/GUI checks, reinstall of eligible bottles, matching versions/checksums,
 and a corresponding source archive for each formula. The source archive contains
 the exact pinned source, Cargo-vendored dependencies, Fred TV's npm packages,
 license files and tap build recipes. Bottle JSON records build provenance and
