@@ -15,8 +15,15 @@ jobs:
         tap_parent="$(brew --repository)/Library/Taps/edbfi"
         mkdir -p "$tap_parent"
         ln -s "$GITHUB_WORKSPACE" "$tap_parent/homebrew-taps"
+        brew trust edbfi/taps
     - name: Read all casks
-      run: brew readall --no-simulate edbfi/taps
+      run: |
+        set -euo pipefail
+        brew readall --no-simulate edbfi/taps
+        brew info --json=v2 --cask edbfi/taps/fcast-sender edbfi/taps/flixor \
+          edbfi/taps/fredtv edbfi/taps/paicord edbfi/taps/qview > casks-check.json
+        jq -e '[.casks[].token] | sort == ["fcast-sender", "flixor", "fredtv", "paicord", "qview"]' casks-check.json
+        rm casks-check.json
     - name: brew style
       run: brew style edbfi/taps
     - name: brew audit
