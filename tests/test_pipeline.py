@@ -16,7 +16,7 @@ class PipelineTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             work = Path(directory)
             fake = work / "gh"
-            fake.write_text("#!/usr/bin/env python3\nimport json, os, sys\nfrom pathlib import Path\np=Path(os.environ['CALLS'])\nwith p.open('a') as f: f.write(json.dumps(sys.argv[1:])+'\\n')\nif sys.argv[1:3]==['release','view']: print('qView-7.1.dmg')\n")
+            fake.write_text("#!/usr/bin/env python3\nimport json, os, sys\nfrom pathlib import Path\np=Path(os.environ['CALLS'])\nwith p.open('a') as f: f.write(json.dumps(sys.argv[1:])+'\\n')\nif sys.argv[1:3]==['release','view']: print('qView-7.1.dmg')\nif sys.argv[1:3]==['release','download']: (Path(sys.argv[sys.argv.index('--dir')+1])/'qView-7.1.dmg').write_bytes(os.environ.get('HOSTED_BYTES','fixture').encode())\n")
             fake.chmod(0o755)
             asset = work / "qView-7.1.dmg"
             asset.write_bytes(b"fixture")
@@ -30,6 +30,13 @@ class PipelineTests(unittest.TestCase):
             commands = [json.loads(line) for line in calls.read_text().splitlines()]
             self.assertTrue(any(c[:2] == ["release", "edit"] for c in commands))
             self.assertFalse(any(c[:2] in (["release", "delete-asset"], ["release", "upload"]) for c in commands))
+            self.assertTrue(any(c[:2] == ["release", "download"] for c in commands))
+            env["HOSTED_BYTES"] = "different"
+            mismatch = subprocess.run(["bash", str(ROOT / "scripts/publish-release.sh"), "qview", str(asset), str(notes)],
+                                      cwd=work, env=env, capture_output=True, text=True)
+            self.assertNotEqual(mismatch.returncode, 0)
+            self.assertIn("differs from upstream", mismatch.stderr)
+            self.assertEqual(asset.read_bytes(), b"fixture")
 
     def rewrite(self, version="1.2.3", digest="b" * 64, content=CASK):
         with tempfile.TemporaryDirectory() as directory:

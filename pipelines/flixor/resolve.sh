@@ -2,7 +2,7 @@
 # Resolver: Flixor.
 #
 # Reads /releases/latest (non-draft, non-prerelease). Upstream names its DMG
-# inconsistently, so the first .dmg asset is taken, but it must live under the
+# inconsistently, so exactly one .dmg asset is required, and it must live under the
 # release's own download path. Tags look like beta2.4.0 or 1.0.0.
 
 # shellcheck source=SCRIPTDIR/../../scripts/lib/common.sh
@@ -25,7 +25,9 @@ tag="$(jq -r '.tag_name // empty' release.json)"
 tag_re='^[A-Za-z]*[0-9]+(\.[0-9]+)*$'
 [[ "${tag}" =~ ${tag_re} ]] || die "Unexpected upstream tag format: ${tag}"
 
-download_url="$(jq -r '[.assets[] | select(.name | test("\\.dmg$"; "i"))][0].browser_download_url // empty' release.json)"
+count="$(jq '[.assets[] | select(.name | test("\\.dmg$"; "i"))] | length' release.json)"
+[[ "${count}" -eq 1 ]] || die "Expected exactly one Flixor DMG in ${tag}, found ${count}"
+download_url="$(jq -r '.assets[] | select(.name | test("\\.dmg$"; "i")) | .browser_download_url' release.json)"
 [[ -n "${download_url}" ]] || die "No DMG asset in upstream release ${tag}."
 
 expected_prefix="https://github.com/${UPSTREAM_REPO}/releases/download/${tag}/"

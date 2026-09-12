@@ -46,6 +46,7 @@ jobs:
       with:
         python-version: '3.14'
     - run: bash .github/scripts/check.sh
+    - run: python3 -m unittest discover -s scripts/tests -v
     - run: git diff --exit-code HEAD
 'on':
   workflow_call: null

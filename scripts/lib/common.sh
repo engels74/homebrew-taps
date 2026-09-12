@@ -66,20 +66,32 @@ find_cask_file() {
 # cask_version CASK_FILE — the quoted value on the "  version" line.
 cask_version() { grep -E '^  version "' "$1" | sed 's/.*"\(.*\)".*/\1/'; }
 
-# load_pipeline TOKEN — source pipelines/TOKEN/config.env and export derived names.
+# load_pipeline TOKEN [cask|formula] — load one package kind from the app pipeline.
 load_pipeline() {
-  local cask="$1"
+  local cask="$1" kind="${2:-cask}"
   [[ "${cask}" =~ ^[a-z0-9][a-z0-9-]*$ ]] || die "Invalid cask token: '${cask}'"
   PIPELINE_DIR="${REPO_ROOT}/pipelines/${cask}"
   [[ -f "${PIPELINE_DIR}/config.env" ]] || die "Missing ${PIPELINE_DIR#"${REPO_ROOT}/"}/config.env"
-  [[ -f "${PIPELINE_DIR}/resolve.sh" ]] || die "Missing ${PIPELINE_DIR#"${REPO_ROOT}/"}/resolve.sh"
+  PACKAGE_KINDS=cask
+  FORMULA_SOURCE=""
+  FORMULA_TAG_RE=""
+  export FORMULA_SOURCE FORMULA_TAG_RE
   # shellcheck disable=SC1091
   source "${PIPELINE_DIR}/config.env"
+  [[ ",${PACKAGE_KINDS}," = *",${kind},"* ]] || die "${cask} has no ${kind} pipeline"
   : "${DISPLAY_NAME:?config.env must set DISPLAY_NAME}"
   : "${UPSTREAM_URL:?config.env must set UPSTREAM_URL}"
   : "${ASSET_PREFIX:?config.env must set ASSET_PREFIX}"
   CASK_TOKEN="${cask}"
-  CASK_FILE="$(find_cask_file "${cask}")"
+  if [[ "${kind}" = cask ]]
+  then
+    [[ -f "${PIPELINE_DIR}/resolve.sh" ]] || die "Missing cask resolver for ${cask}"
+    CASK_FILE="$(find_cask_file "${cask}")"
+  else
+    FORMULA_FILE="Formula/${cask}.rb"
+    [[ -f "${REPO_ROOT}/${FORMULA_FILE}" ]] || die "Missing ${FORMULA_FILE}"
+    export FORMULA_FILE
+  fi
   RELEASE_TAG="${cask}-latest"
   RELEASE_TITLE="${DISPLAY_NAME} (latest)"
   export PIPELINE_DIR CASK_TOKEN CASK_FILE RELEASE_TAG RELEASE_TITLE

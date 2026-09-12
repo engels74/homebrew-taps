@@ -39,7 +39,7 @@ This tap only re-packages other people's work. If an app earns a place in your D
 | --- | --- | --- |
 | [FCast Sender](https://fcast.org/) | `brew install --cask edbfi/taps/fcast-sender` | Apple Silicon, macOS 11+ |
 | [Flixor](https://github.com/Flixorui/flixor) | `brew install --cask edbfi/taps/flixor` | macOS 13+ |
-| [Fred TV](https://github.com/Fredolx/open-tv) | `brew install --cask edbfi/taps/fredtv` | macOS, `mpv` (installed for you) |
+| [Fred TV](https://github.com/Fredolx/open-tv) | `brew install --cask edbfi/taps/fredtv` | macOS, `mpv`, `ffmpeg`, `yt-dlp` (installed for you) |
 | [Paicord](https://github.com/llsc12/Paicord) | `brew install --cask edbfi/taps/paicord` | macOS 14+ |
 | [qView](https://github.com/jurplel/qView) | `brew install --cask edbfi/taps/qview` | macOS 12+ |
 
@@ -50,7 +50,7 @@ Casks live in `Casks/<category>/`: `media/` holds FCast Sender, Flixor, Fred TV 
 - **FCast Sender** ships only an `aarch64` build, so Intel Macs are not supported. The app is signed and notarized by FUTO, so no quarantine workaround is applied. Versions drop the pre-release suffix the upstream tag carries: `sender-0.0.3-beta` becomes `0.0.3`.
 - **Flixor** versions match upstream tags such as `beta2.4.0`. The app bundle is `FlixorMac.app`.
 - **Fred TV** depends on the `mpv` formula, which Homebrew installs alongside it. Versions strip a leading `v` (`v1.9.1` becomes `1.9.1`).
-- **Paicord** has no upstream releases. Each cask version is `YYYY-MM-DD-<short sha>` of the newest successful upstream build.
+- **Paicord** uses the immutable upstream release belonging to the newest successful main build. Each cask version is `YYYY-MM-DD-<short sha>`; the release tag must match that exact build commit.
 
   > [!WARNING]
   > Paicord is an unofficial, third-party Discord client. Using it violates Discord's Terms of Service and your account may be suspended or banned. **Use at your own risk.**
@@ -83,6 +83,32 @@ brew uninstall --cask --zap <app>
 # Remove the tap
 brew untap edbfi/taps
 ```
+
+## Linux packages
+
+qView, Fred TV and FCast's desktop Sender also have Linux source formulae for
+ARM64 and x86_64. Flixor and Paicord remain macOS-only. Use an explicit package
+kind when a formula and cask share a name:
+
+```sh
+brew install --formula edbfi/taps/qview
+brew install --formula edbfi/taps/fredtv
+brew install --formula edbfi/taps/fcast-sender
+```
+
+These build from source; no Linux bottles are published by this rollout. Fred TV
+remains source-only pending the existing upstream licensing clarification.
+Native CI checks both architectures, formula tests/linkage, X11/Wayland rendering,
+and local reinstall of eligible bottle artifacts. CI never publishes Linux releases
+or updates the default branch. Formula source updates require a reviewed PR.
+
+Use Homebrew's default Linux prefix on a supported host. Your desktop supplies
+X11 or Wayland, D-Bus and audio; FCast capture additionally needs PipeWire and a
+compatible ScreenCast portal. The tap installs a GStreamer plugin but starts no
+session services. Add `/home/linuxbrew/.linuxbrew/share` to your session's
+`XDG_DATA_DIRS` to expose desktop launchers. Uninstall preserves user settings.
+See [platform support and historical validation](docs/platform-support.md) for
+source versions, desktop requirements and untested hardware features.
 
 ## How it works
 
