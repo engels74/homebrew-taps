@@ -9,7 +9,9 @@ cask "fredtv" do
   desc "Ultra-fast, simple and powerful cross-platform IPTV app"
   homepage "https://github.com/Fredolx/open-tv"
 
+  depends_on formula: "ffmpeg"
   depends_on formula: "mpv"
+  depends_on formula: "yt-dlp"
   depends_on :macos
 
   app "Fred TV.app"

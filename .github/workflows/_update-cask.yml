@@ -9,7 +9,7 @@ name: Update one cask
 jobs:
   update:
     name: update ${{ inputs.cask }}
-    runs-on: ubuntu-24.04
+    runs-on: macos-15
     permissions:
       contents: write
       pull-requests: write
@@ -54,6 +54,11 @@ jobs:
         name: ${{ inputs.cask }}-dmg
         path: ${{ runner.temp }}/work/${{ steps.resolve.outputs.asset }}
         retention-days: 1
+    - name: Verify app identity and architecture before publishing
+      if: steps.resolve.outputs.skip != 'true' && steps.check.outputs.needed == 'true'
+      env:
+        ASSET: ${{ steps.resolve.outputs.asset }}
+      run: python3 scripts/inspect-macos.py "$CASK" "${RUNNER_TEMP}/work/${ASSET}"
     - name: Prepare rolling release notes
       if: steps.resolve.outputs.skip != 'true' && steps.check.outputs.needed == 'true'
       env:

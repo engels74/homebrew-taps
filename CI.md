@@ -32,5 +32,11 @@ The versioned `edbfi/automation` preset replaces unconditional major automerge
 and `ignoreTests: true`. Full action version tags are bot-managed; automerge stays
 off pending the shared pre-1.0 policy correction and activation. Renovate's
 Homebrew manager is disabled because the cask updater owns verified re-hosted
-versions/checksums. CI does not install or launch the shipped applications, inspect
-upstream DMGs, or require VirusTotal when its key is absent. Published assets are preserved while cask PRs await manual review. The separate Linux-support PR remains independent of this rollout.
+versions/checksums. The macOS CI does not launch applications; the updater now inspects bundle identity
+and architectures before publication. VirusTotal remains optional. Published assets are preserved while cask PRs await manual review. The Linux integration adds reusable formulae.yml to the same required gate. It
+builds all four source formulae on native Ubuntu ARM64 and x86_64, runs linkage,
+strict audits and X11/Wayland GUI checks, then locally reinstalls the three eligible
+bottles and repeats checks. Fred TV stays source-installed. Complete combined
+bottle/source artifacts are verified in a read-only aggregation job. Neither
+Linux source resolution nor release publication runs automatically; recipe updates
+require a reviewed PR. Existing keepalive credentials remain unchanged.

@@ -26,4 +26,4 @@ fi
 
 [[ -s "${asset}" ]] || die "Downloaded asset ${asset} is empty"
 ls -la "${asset}" >&2
-echo "sha256=$(sha256sum "${asset}" | awk '{print $1}')"
+echo "sha256=$(shasum -a 256 "${asset}" | awk '{print $1}')"

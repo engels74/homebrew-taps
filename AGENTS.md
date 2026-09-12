@@ -6,7 +6,7 @@ repository.
 ## What this is
 
 `edbfi/taps`, one Homebrew tap that re-hosts macOS builds of several upstream
-apps as casks. There is no application source or build system here; offline updater fixtures validate the pipeline.
+apps as casks and provides Linux source formulae. There is no application source or build system here; offline updater fixtures validate the pipeline.
 Three moving parts:
 
 1. `Casks/<category>/<token>.rb`, the casks. Categories are folders only; Homebrew
@@ -119,3 +119,41 @@ validates the workflows. `lint.yml` runs the same native checks behind the unfil
   `chore(<token>): update to <version>`.
 - `README.md` is the user-facing description of the cadence, re-hosting, donation
   links and migration path. Keep it in sync when any of those change.
+
+## Linux packaging and validation
+
+- `PACKAGE_KINDS` defaults to `cask`; set `cask,formula` for apps with both, or
+  `formula` for the PipeWire plugin. `bash scripts/discover.sh '' formula` discovers
+  formulae. The build workflow's dependency order and GUI app list are explicit;
+  update both when adding a formula.
+- `pipelines/bottles.json` is the binary publication allowlist. Fred TV is source-only
+  pending GPL-2.0/OpenSSL 3 linking permission clarification. Keep testing its source
+  build on both architectures, but do not upload its binaries without resolving that
+  licensing question. The verifier rejects unapproved binary assets.
+- Formula sources stay pinned to the reviewed immutable archives. The reusable
+  formulae.yml builds/tests the checked-in recipes through ci.yml; it never resolves
+  moving versions, publishes releases or writes branches. Bottle artifacts are for
+  review and reinstall validation only. A separate reviewed publication design is
+  required before enabling Linux binary distribution or automated formula updates.
+  Keep Fred TV source-only. Increment recipe revision for same-version packaging
+  or dependency/ABI fixes when users need an upgrade.
+- Build and bottle each formula sequentially, immediately after its tests. Homebrew
+  records prefix changes between build and bottling; unrelated installs in between
+  can contaminate a bottle. Never run simultaneous brew installs in one prefix.
+- `pipewire-gstreamer` builds only PipeWire's GStreamer plugin against core PipeWire.
+  Do not replace or start the user's distribution audio server or portal.
+- Fred TV uses Node 20 for Angular 17. Keep Cargo/npm lockfiles effective. FCast must
+  build `senders/desktop`, not a similarly named receiver, CLI or SDK.
+- `python3 -m unittest discover -s scripts/tests -v` checks resolver guards, source
+  rewriting and complete bottle releases. `actionlint` checks all workflows.
+- On Linux, `bash scripts/test-linux-gui.sh [qview fredtv fcast-sender]` uses private
+  homes, D-Bus sessions, Xvfb and headless Weston. Required host tools: xvfb, xauth,
+  weston and dbus-run-session. It renders test images and verifies windows/surface
+  buffers. It does not prove audio, media playback, capture permissions or portals.
+- `scripts/inspect-macos.py TOKEN DMG` mounts read-only, verifies bundle identity and
+  all Mach-O slices, then detaches. The cask updater performs this before publishing.
+  Architecture policy changes require inspecting actual bundles, not asset labels.
+- Keep `docs/platform-support.md` honest about tested hardware and feature coverage.
+  Never infer Intel Mac runtime support from universal slices or Linux ARM support
+  from an x86_64 build. Do not overwrite an existing local tap when linking a test
+  checkout; use a temporary tap name and remove only your symlink afterwards.

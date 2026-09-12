@@ -37,6 +37,12 @@ then
   die "Release ${RELEASE_TAG} does not contain ${asset} after upload."
 fi
 
+# Never propose a checksum for bytes different from the hosted download.
+verify_dir="$(mktemp -d)"
+trap 'rm -rf "${verify_dir}"' EXIT
+gh release download "${RELEASE_TAG}" --pattern "${asset}" --dir "${verify_dir}"
+cmp -s "${asset_path}" "${verify_dir}/${asset}" || die "Hosted ${asset} differs from upstream; review the re-release before updating"
+
 # Preserve published assets while generated cask PRs await manual review.
 
 log "Rolling release ${RELEASE_TAG} now serves ${asset}."

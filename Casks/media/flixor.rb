@@ -6,7 +6,7 @@ cask "flixor" do
 
   url "https://github.com/edbfi/homebrew-taps/releases/download/flixor-latest/Flixor-#{version}.dmg"
   name "Flixor"
-  desc "Cross-platform Plex media client with a Netflix-like UI"
+  desc "Native Plex media client with a Netflix-like UI"
   homepage "https://github.com/Flixorui/flixor"
 
   depends_on macos: :ventura
